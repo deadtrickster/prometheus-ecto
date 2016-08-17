@@ -1,23 +1,57 @@
 defmodule Ecto.PrometheusCollector do
 
+  alias Ecto.PrometheusCollector.Config
+
   def setup do
-    request_duration_bounds = [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000]
-    labels = [:stage, :result]
+    labels = if Config.stages do
+      [:stage] ++ Config.labels
+    else
+      Config.labels
+    end
     :prometheus_histogram.declare([name: :ecto_query_duration_microseconds,
                                    help: "Ecto query duration in microseconds.",
                                    labels: labels,
-                                   buckets: request_duration_bounds])
+                                   buckets: Config.query_duration_buckets])
   end
 
   def log(entry) do
-    {result, _} = entry.result
-    :prometheus_histogram.observe(:ecto_query_duration_microseconds, [:queue, result], microseconds_time(entry.queue_time))
-    :prometheus_histogram.observe(:ecto_query_duration_microseconds, [:query, result], microseconds_time(entry.query_time))
-    :prometheus_histogram.observe(:ecto_query_duration_microseconds, [:decode, result], microseconds_time(entry.decode_time))
+    labels = construct_labels(Config.labels, entry)
+    stages = Config.stages
+    actual_labels = if stages do
+      for stage <- stages do
+        value = stage_value(stage, entry)
+        :prometheus_histogram.observe(:ecto_query_duration_microseconds, [stage] ++ labels, microseconds_time(value))
+      end
+    else
+      :prometheus_histogram.observe(:ecto_query_duration_microseconds, labels, microseconds_time(total_value(entry)))
+    end
     entry
+  end
+
+  defp construct_labels(labels, entry) do
+    for label <- labels, do: label_value(label, entry)
   end
 
   defp microseconds_time(time) do
     :erlang.convert_time_unit(time, :native, :micro_seconds)
+  end
+
+  defp label_value(:result, entry) do
+    {result, _} = entry.result
+    result
+  end
+
+  defp stage_value(:queue, entry) do
+    microseconds_time(entry.queue_time)
+  end
+  defp stage_value(:query, entry) do
+    microseconds_time(entry.query_time)
+  end
+  defp stage_value(:decode, entry) do
+    microseconds_time(entry.decode_time)
+  end
+
+  def total_value(entry) do
+    entry.queue_time + entry.query_time + entry.decode_time
   end
 end
