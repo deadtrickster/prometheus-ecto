@@ -33,7 +33,7 @@ defmodule Ecto.PrometheusCollector do
   end
 
   defp microseconds_time(time) do
-    :erlang.convert_time_unit(time, :native, :micro_seconds)
+    System.convert_time_unit(time, :native, :micro_seconds)
   end
 
   defp label_value(:result, entry) do
@@ -44,13 +44,13 @@ defmodule Ecto.PrometheusCollector do
   defp label_value(fun, entry) when is_function(fun, 1), do: fun.(entry)
 
   defp stage_value(:queue, entry) do
-    microseconds_time(entry.queue_time)
+    entry.queue_time
   end
   defp stage_value(:query, entry) do
-    microseconds_time(entry.query_time)
+    entry.query_time
   end
   defp stage_value(:decode, entry) do
-    microseconds_time(entry.decode_time)
+    entry.decode_time
   end
 
   def total_value(entry) do
