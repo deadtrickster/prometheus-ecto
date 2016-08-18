@@ -17,7 +17,7 @@ defmodule Ecto.PrometheusCollector do
   def log(entry) do
     labels = construct_labels(Config.labels, entry)
     stages = Config.stages
-    actual_labels = if stages do
+    if stages do
       for stage <- stages do
         value = stage_value(stage, entry)
         :prometheus_histogram.observe(:ecto_query_duration_microseconds, [stage] ++ labels, microseconds_time(value))
@@ -40,6 +40,8 @@ defmodule Ecto.PrometheusCollector do
     {result, _} = entry.result
     result
   end
+  defp label_value({label, fun}, entry) when is_function(fun, 2), do: fun.(label, entry)
+  defp label_value(fun, entry) when is_function(fun, 1), do: fun.(entry)
 
   defp stage_value(:queue, entry) do
     microseconds_time(entry.queue_time)
