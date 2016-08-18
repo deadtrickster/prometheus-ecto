@@ -34,6 +34,58 @@ config :prometheus, EctoCollector,
 Duration units are **microseconds**. 
 You can find more on what stages are available and their description [here](https://hexdocs.pm/ecto/Ecto.LogEntry.html).
 
+With this configuration scrape will look like this:
+
+```
+# TYPE ecto_query_duration_microseconds histogram
+# HELP ecto_query_duration_microseconds Ecto query duration in microseconds.
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="10"} 0
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="100"} 45
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="1000"} 86
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="10000"} 88
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="100000"} 88
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="300000"} 88
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="500000"} 88
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="750000"} 88
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="1000000"} 88
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="1500000"} 88
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="2000000"} 88
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="3000000"} 88
+ecto_query_duration_microseconds_bucket{stage="decode",result="ok",le="+Inf"} 88
+ecto_query_duration_microseconds_count{stage="decode",result="ok"} 88
+ecto_query_duration_microseconds_sum{stage="decode",result="ok"} 22071
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="10"} 0
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="100"} 34
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="1000"} 87
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="10000"} 88
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="100000"} 88
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="300000"} 88
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="500000"} 88
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="750000"} 88
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="1000000"} 88
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="1500000"} 88
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="2000000"} 88
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="3000000"} 88
+ecto_query_duration_microseconds_bucket{stage="queue",result="ok",le="+Inf"} 88
+ecto_query_duration_microseconds_count{stage="queue",result="ok"} 88
+ecto_query_duration_microseconds_sum{stage="queue",result="ok"} 16589
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="10"} 0
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="100"} 0
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="1000"} 31
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="10000"} 88
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="100000"} 88
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="300000"} 88
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="500000"} 88
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="750000"} 88
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="1000000"} 88
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="1500000"} 88
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="2000000"} 88
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="3000000"} 88
+ecto_query_duration_microseconds_bucket{stage="query",result="ok",le="+Inf"} 88
+ecto_query_duration_microseconds_count{stage="query",result="ok"} 88
+ecto_query_duration_microseconds_sum{stage="query",result="ok"} 153163
+```
+
 ## Installation
 
 [Available in Hex](https://hex.pm/docs/publish), the package can be installed as:
