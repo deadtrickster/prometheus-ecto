@@ -3,13 +3,17 @@ defmodule Ecto.PrometheusCollector do
   alias Ecto.PrometheusCollector.Config
 
   def setup do
-    labels = if Config.stages do
-      [:stage] ++ Config.labels
-    else
-      Config.labels
+    labels = Config.labels
+    stages = Config.stages
+    for stage <- stages do
+      :prometheus_histogram.declare([name: stage_metric_name(stage),
+                                     help: stage_metric_help(stage),
+                                     labels: labels,
+                                     buckets: Config.query_duration_buckets])
     end
+
     :prometheus_histogram.declare([name: :ecto_query_duration_microseconds,
-                                   help: "Ecto query duration in microseconds.",
+                                   help: "Total Ecto query time",
                                    labels: labels,
                                    buckets: Config.query_duration_buckets])
   end
@@ -20,11 +24,12 @@ defmodule Ecto.PrometheusCollector do
     if stages do
       for stage <- stages do
         value = stage_value(stage, entry)
-        :prometheus_histogram.observe(:ecto_query_duration_microseconds, [stage] ++ labels, microseconds_time(value))
+        if value != nil do
+          :prometheus_histogram.observe(stage_metric_name(stage), labels, microseconds_time(value))
+        end
       end
-    else
-      :prometheus_histogram.observe(:ecto_query_duration_microseconds, labels, microseconds_time(total_value(entry)))
     end
+    :prometheus_histogram.observe(:ecto_query_duration_microseconds, labels, total_value(entry))
     entry
   end
 
@@ -43,6 +48,14 @@ defmodule Ecto.PrometheusCollector do
   defp label_value({label, fun}, entry) when is_function(fun, 2), do: fun.(label, entry)
   defp label_value(fun, entry) when is_function(fun, 1), do: fun.(entry)
 
+  defp stage_metric_name(:queue), do: :ecto_queue_duration_microseconds
+  defp stage_metric_name(:query), do: :ecto_db_query_duration_microseconds
+  defp stage_metric_name(:decode), do: :ecto_decode_duration_microseconds
+
+  defp stage_metric_help(:queue), do: "The time spent to check the connection out in microseconds."
+  defp stage_metric_help(:query), do: "The time spent executing the DB query in microseconds."
+  defp stage_metric_help(:decode), do: "The time spent decoding the result in microseconds."
+
   defp stage_value(:queue, entry) do
     entry.queue_time
   end
@@ -54,6 +67,16 @@ defmodule Ecto.PrometheusCollector do
   end
 
   def total_value(entry) do
-    entry.queue_time + entry.query_time + entry.decode_time
+    zero_if_nil(entry.queue_time) +
+    zero_if_nil(entry.query_time) +
+    zero_if_nil(entry.decode_time)
+  end
+
+  defp zero_if_nil(value) do
+    if value == nil do
+      0
+    else
+      value
+    end
   end
 end
