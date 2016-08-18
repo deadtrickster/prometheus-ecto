@@ -1,5 +1,7 @@
 # PrometheusEcto
 
+## Setup
+
 On app/supervisor start:
 
 ```elixir
@@ -13,6 +15,24 @@ In your Repo config:
   loggers: [Ecto.LogEntry, Ecto.PrometheusCollector]
   ....
 ```
+
+## Configuration
+
+This integartion is configured via `EctoCollector` `:prometheus` app env key
+
+Default configuration:
+
+```elixir
+config :prometheus, EctoCollector,
+  labels: [:result],
+  stages: [:queue, :query, :decode],
+  query_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000,
+                            500_000, 750_000, 1_000_000, 1_500_000,
+                            2_000_000, 3_000_000]
+``` 
+
+Duration units are **microseconds**. 
+You can find more on what stages are available and their description [here](https://hexdocs.pm/ecto/Ecto.LogEntry.html).
 
 ## Installation
 
