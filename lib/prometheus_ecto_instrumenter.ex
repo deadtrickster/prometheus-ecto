@@ -1,6 +1,6 @@
-defmodule Ecto.PrometheusCollector do
+defmodule Prometheus.EctoInstrumenter do
 
-  alias Ecto.PrometheusCollector.Config
+  alias Prometheus.EctoInstrumenter.Config
 
   def setup do
     labels = Config.labels

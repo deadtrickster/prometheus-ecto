@@ -1,4 +1,4 @@
-defmodule Ecto.PrometheusCollector.Config do
+defmodule Prometheus.EctoInstrumenter.Config do
 
   @default_stages [:queue, :query, :decode]
   @default_labels [:result]
@@ -22,7 +22,7 @@ defmodule Ecto.PrometheusCollector.Config do
   end
 
   def collector_config do
-    Application.get_env(:prometheus, EctoCollector, @default_config)
+    Application.get_env(:prometheus, EctoInstrumenter, @default_config)
   end
 
   def config(name, default) do

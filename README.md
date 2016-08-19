@@ -5,25 +5,25 @@
 On app/supervisor start:
 
 ```elixir
-    Ecto.PrometheusCollector.setup()
+    Prometheus.EctoInstrumenter.setup()
 ```
 
 In your Repo config:
 
 ```elixir
   ...
-  loggers: [Ecto.LogEntry, Ecto.PrometheusCollector]
+  loggers: [Ecto.LogEntry, Prometheus.EctoInstrumenter]
   ....
 ```
 
 ## Configuration
 
-This integartion is configured via `EctoCollector` `:prometheus` app env key
+This integartion is configured via `EctoInstrumenter` `:prometheus` app env key
 
 Default configuration:
 
 ```elixir
-config :prometheus, EctoCollector,
+config :prometheus, EctoInstrumenter,
   labels: [:result],
   stages: [:queue, :query, :decode],
   query_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000,
@@ -145,7 +145,7 @@ ecto_queue_duration_microseconds_sum{result="ok"} 65503
 
     ```elixir
     def deps do
-      [{:prometheus_ecto, "~> 0.1.0"}]
+      [{:prometheus_ecto, "~> 0.0.4"}]
     end
     ```
 
