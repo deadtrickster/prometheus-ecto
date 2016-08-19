@@ -2,7 +2,9 @@ defmodule Ecto.PrometheusCollector.Config do
 
   @default_stages [:queue, :query, :decode]
   @default_labels [:result]
-  @default_query_duration_buckets [10, 100, 1_000, 10_000, 100_000, 300_000, 500_000, 750_000, 1_000_000, 1_500_000, 2_000_000, 3_000_000]
+  @default_query_duration_buckets [10, 100, 1_000, 10_000, 100_000, 300_000,
+                                   500_000, 750_000, 1_000_000, 1_500_000,
+                                   2_000_000, 3_000_000]
   @default_config [stages: @default_stages,
                    labels: @default_labels,
                    query_duration_buckets: @default_query_duration_buckets]
