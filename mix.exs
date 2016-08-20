@@ -32,6 +32,7 @@ defmodule PrometheusEcto.Mixfile do
   
   defp deps do
     [{:prometheus, "~> 2.0"},
-     {:ecto, "~> 2.0"}]
+     {:ecto, "~> 2.0"},
+     {:mariaex, ">= 0.0.0", only: :test}]
   end
 end
