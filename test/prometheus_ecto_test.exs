@@ -13,19 +13,19 @@ defmodule PrometheusEctoTest do
     assert {buckets, sum} = :prometheus_histogram.value(:ecto_query_duration_microseconds, [:ok])
     assert sum > 0
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
-    
+
     assert {buckets, sum} = :prometheus_histogram.value(:ecto_queue_duration_microseconds, [:ok])
     assert sum > 0
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
-    
+
     assert {buckets, sum} = :prometheus_histogram.value(:ecto_db_query_duration_microseconds, [:ok])
     assert sum > 0
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
-    
+
     assert {buckets, sum} = :prometheus_histogram.value(:ecto_decode_duration_microseconds, [:ok])
     assert sum > 0
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
   end
 
-  ### test transactioned insertion - there should be query with queue/decode_time=nil 
+  ### test transactioned insertion - there should be query with queue/decode_time=nil
 end

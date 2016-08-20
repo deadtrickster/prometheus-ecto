@@ -22,6 +22,6 @@ end
 
 Prometheus.EctoInstrumenter.setup()
 Application.ensure_all_started(:mariaex)
-{:ok, _pid} = Prometheus.EctoInstrumenter.TestRepo.start_link
 Mix.Task.run "ecto.create", ~w(-r Prometheus.EctoInstrumenter.TestRepo)
+{:ok, _pid} = Prometheus.EctoInstrumenter.TestRepo.start_link
 Ecto.Adapters.SQL.Sandbox.mode(Prometheus.EctoInstrumenter.TestRepo, :manual)
