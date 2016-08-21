@@ -3,7 +3,7 @@ defmodule PrometheusEcto.Mixfile do
 
   def project do
     [app: :prometheus_ecto,
-     version: "0.0.4",
+     version: "0.0.5",
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -26,12 +26,15 @@ defmodule PrometheusEcto.Mixfile do
     [maintainers: ["Ilya Khaprov"],
      licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/deadtrickster/prometheus-ecto",
-              "Plugs" => "https://github.com/deadtrickster/prometheus-plugs",
-              "Phoenix Instrumenter" => "https://github.com/deadtrickster/prometheus-phoenix"}]
+              "Prometheus.erl" => "https://hex.pm/packages/prometheus",
+              "Prometheus.ex" => "https://hex.pm/packages/prometheus_ex",
+              "Plugs Instrumenter/Exporter" => "https://hex.pm/packages/prometheus_plugs",
+              "Phoenix Instrumenter" => "https://hex.pm/packages/prometheus_phoenix",
+              "Process info Collector" => "https://hex.pm/packages/prometheus_process_collector"}]
   end
   
   defp deps do
-    [{:prometheus, "~> 2.0"},
+    [{:prometheus_ex, "~> 0.0.1"},
      {:ecto, "~> 2.0"},
      {:mariaex, ">= 0.0.0", only: :test}]
   end

@@ -1,6 +1,11 @@
 defmodule Prometheus.EctoInstrumenter do
 
-  alias Prometheus.EctoInstrumenter.Config
+  use Prometheus.Config, [stages: [:queue, :query, :decode],
+                          labels: [:result],
+                          query_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000,
+                                                   500_000, 750_000, 1_000_000, 1_500_000,
+                                                   2_000_000, 3_000_000],
+                          registry: :default]
 
   def setup do
     labels = Config.labels
