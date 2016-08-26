@@ -4,7 +4,7 @@ defmodule Prometheus.EctoInstrumenter do
 
   ### Usage
 
-  1. Define your Instrumenter:
+  1. Define your instrumenter:
 
   ```elixir
   defmodule MyApp.Repo.Instrumenter do
@@ -48,6 +48,9 @@ defmodule Prometheus.EctoInstrumenter do
   There is also `ecto_query_duration_microseconds` metric that observers total query execution time.
   Basically it sums non-nil stages.
 
+  Default labels:
+   - `:result`
+
   ### Configuration
 
   Instrumenter configured via `:prometheus` application environment `MyApp.Repo.Instrumenter` key
@@ -64,10 +67,30 @@ defmodule Prometheus.EctoInstrumenter do
                              2_000_000, 3_000_000],
     registry: :default
 
-  ``` 
-  
-  
+  ```
+
   Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
+
+  ### Custom Labels
+
+  Custom labels can be defined by implementing label_value/2 function in instrumenter directly or
+  by calling exported function from other module.
+
+  ```elixir
+    labels: [:result,
+             :my_private_label,
+             {:label_from_other_module, Module}, # eqv to {Module, label_value}
+             {:non_default_label_value, {Module, custom_fun}}]
+
+
+  defmodule MyApp.Repo.Instrumenter do
+    use Prometheus.EctoInstrumenter
+
+    label_value(:my_private_label, log_entry) do
+      ...
+    end
+  end
+  ```
   """
 
   use Prometheus.Config, [stages: [:queue, :query, :decode],
@@ -154,7 +177,7 @@ defmodule Prometheus.EctoInstrumenter do
         System.convert_time_unit(time, :native, :micro_seconds)
       end
     end
-  end 
+  end
 
   defp normalize_labels(labels) do
     for label <- labels do
