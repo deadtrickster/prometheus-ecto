@@ -1,4 +1,74 @@
 defmodule Prometheus.EctoInstrumenter do
+  @moduledoc """
+  Ecto instrumenter generator for Prometheus. Implemented as Ecto logger.
+
+  ### Usage
+
+  1. Define your Instrumenter:
+
+  ```elixir
+  defmodule MyApp.Repo.Instrumenter do
+    use Prometheus.EctoInstrumenter
+  end
+  ```
+
+  2. Call `MyApp.Repo.Instrumenter.setup/0` when application starts (e.g. supervisor setup):
+
+  ```elixir
+  MyApp.Repo.Instrumenter.setup()
+  ```
+
+  3. Add `MyApp.Repo.Instrumenter` to Repo loggers list:
+
+  ```elixir
+  config :myapp, MyApp.Repo,
+    ...
+    loggers: [MyApp.Repo.Instrumenter, Ecto.LogEntry]
+    ...
+  ```
+
+  ### Metrics
+
+  Each Ecto query has different stages. Currently there are three of them:
+
+   - queue - when socket checked out from the pool;
+   - query (this instrumenter uses db_query name) - when actual database query performed;
+   - decode - when query result decoded.
+
+  Any of these stages can be nil (i.e. not performed). For example queries inside transaction won't have queue
+  stage or query can be cashed, etc.
+
+  You can instrument these stages separately
+   - queue - `ecto_queue_duration_microseconds`
+   - query - `ecto_db_query_duration_microseconds`
+   - decode - `ecto_decode_duration_microseconds`.
+
+  Stages can be disabled/enabled via configuration. By default all stages are enabled.
+
+  There is also `ecto_query_duration_microseconds` metric that observers total query execution time.
+  Basically it sums non-nil stages.
+
+  ### Configuration
+
+  Instrumenter configured via `:prometheus` application environment `MyApp.Repo.Instrumenter` key
+  (i.e. app env key is the name of the instrumenter).
+
+  Default configuration:
+
+  ```elixir
+  config :prometheus, MyApp.Repo.Instrumenter,
+    stages: [:queue, :query, :decode],
+    labels: [:result],
+    query_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000,
+                             500_000, 750_000, 1_000_000, 1_500_000,
+                             2_000_000, 3_000_000],
+    registry: :default
+
+  ``` 
+  
+  
+  Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
+  """
 
   use Prometheus.Config, [stages: [:queue, :query, :decode],
                           labels: [:result],
