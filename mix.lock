@@ -4,5 +4,5 @@
   "ecto": {:hex, :ecto, "2.0.4", "03fd3b9aa508b1383eb38c00ac389953ed22af53811aa2e504975a3e814a8d97", [:mix], [{:db_connection, "~> 1.0-rc.2", [hex: :db_connection, optional: true]}, {:decimal, "~> 1.0", [hex: :decimal, optional: false]}, {:mariaex, "~> 0.7.7", [hex: :mariaex, optional: true]}, {:poison, "~> 1.5 or ~> 2.0", [hex: :poison, optional: true]}, {:poolboy, "~> 1.5", [hex: :poolboy, optional: false]}, {:postgrex, "~> 0.11.2", [hex: :postgrex, optional: true]}, {:sbroker, "~> 1.0-beta", [hex: :sbroker, optional: true]}]},
   "mariaex": {:hex, :mariaex, "0.7.7", "620a636ec2276c3fa031ac528039fc9d2bf7992e050e37a56b3c796511e94d6d", [:mix], [{:db_connection, "~> 1.0.0-rc", [hex: :db_connection, optional: false]}, {:decimal, "~> 1.0", [hex: :decimal, optional: false]}]},
   "poolboy": {:hex, :poolboy, "1.5.1", "6b46163901cfd0a1b43d692657ed9d7e599853b3b21b95ae5ae0a777cf9b6ca8", [:rebar], []},
-  "prometheus": {:hex, :prometheus, "2.0.0", "edb2f0faaef52ecb23c46e95ebc71d9a9f43664867461297526405c4eff41c31", [:rebar3], []},
-  "prometheus_ex": {:hex, :prometheus_ex, "0.0.1", "d4402f09b7f3a9f0d9f2033be90218e1472a031e82e3e459533a32cb50f73884", [:mix], [{:prometheus, "~> 2.0", [hex: :prometheus, optional: false]}]}}
+  "prometheus": {:hex, :prometheus, "2.2.0", "f58f6f168d2d83afacd010b440c28ac897b5fcc81281845b218ce48b2fe21bd0", [:rebar3], []},
+  "prometheus_ex": {:hex, :prometheus_ex, "0.0.3", "7f70a9536345d922b75adb40c7ed9a9981b7e0982b9cec971b28371a5363a9df", [:mix], [{:prometheus, "~> 2.2.0", [hex: :prometheus, optional: false]}]}}

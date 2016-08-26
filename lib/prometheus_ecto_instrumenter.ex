@@ -7,20 +7,24 @@ defmodule Prometheus.EctoInstrumenter do
                                                    2_000_000, 3_000_000],
                           registry: :default]
 
+  use Prometheus.Metric
+
   def setup do
     labels = Config.labels
     stages = Config.stages
     for stage <- stages do
-      :prometheus_histogram.declare([name: stage_metric_name(stage),
-                                     help: stage_metric_help(stage),
-                                     labels: labels,
-                                     buckets: Config.query_duration_buckets], Config.registry)
+      Histogram.declare([name: stage_metric_name(stage),
+                         help: stage_metric_help(stage),
+                         labels: labels,
+                         buckets: Config.query_duration_buckets,
+                         registry: Config.registry])
     end
 
-    :prometheus_histogram.declare([name: :ecto_query_duration_microseconds,
-                                   help: "Total Ecto query time",
-                                   labels: labels,
-                                   buckets: Config.query_duration_buckets], Config.registry)
+    Histogram.declare([name: :ecto_query_duration_microseconds,
+                       help: "Total Ecto query time",
+                       labels: labels,
+                       buckets: Config.query_duration_buckets,
+                       registry: Config.registry])
   end
 
   def log(entry) do
@@ -30,11 +34,15 @@ defmodule Prometheus.EctoInstrumenter do
       for stage <- stages do
         value = stage_value(stage, entry)
         if value != nil do
-          :prometheus_histogram.observe(Config.registry, stage_metric_name(stage), labels, microseconds_time(value))
+          Histogram.observe([registry: Config.registry,
+                             name: stage_metric_name(stage),
+                             labels: labels], microseconds_time(value))
         end
       end
     end
-    :prometheus_histogram.observe(Config.registry, :ecto_query_duration_microseconds, labels, total_value(entry))
+    Histogram.observe([registry: Config.registry,
+                       name: :ecto_query_duration_microseconds,
+                       labels: labels], total_value(entry))
     entry
   end
 

@@ -13,7 +13,7 @@ defmodule PrometheusEcto.Mixfile do
   end
   
   def application do
-    [applications: [:logger, :prometheus]]
+    [applications: [:logger, :prometheus_ex]]
   end
 
   defp description do
@@ -34,7 +34,7 @@ defmodule PrometheusEcto.Mixfile do
   end
   
   defp deps do
-    [{:prometheus_ex, "~> 0.0.1"},
+    [{:prometheus_ex, "~> 0.0.3"},
      {:ecto, "~> 2.0"},
      {:mariaex, ">= 0.0.0", only: :test}]
   end
