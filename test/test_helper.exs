@@ -1,9 +1,13 @@
 ExUnit.start()
 
+defmodule TestEctoInstrumenter do
+  use Prometheus.EctoInstrumenter
+end
+
 Application.put_env(Prometheus.EctoInstrumenter, Prometheus.EctoInstrumenter.TestRepo,
   [otp_app: Prometheus.EctoInstrumenter,
    loggers: [Ecto.LogEntry,
-             Prometheus.EctoInstrumenter],
+             TestEctoInstrumenter],
    adapter: Ecto.Adapters.MySQL,
    pool: Ecto.Adapters.SQL.Sandbox,
    url: "ecto://" <> (System.get_env("MYSQL_URL") || "root@localhost") <> "/ecto_instrumenter_test"])
@@ -38,7 +42,7 @@ defmodule Prometheus.EctoInstrumenter.Migration do
   end
 end
 
-Prometheus.EctoInstrumenter.setup()
+TestEctoInstrumenter.setup()
 Application.ensure_all_started(:mariaex)
 Mix.Task.run "ecto.create", ~w(-r Prometheus.EctoInstrumenter.TestRepo)
 {:ok, _pid} = Prometheus.EctoInstrumenter.TestRepo.start_link
