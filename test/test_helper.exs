@@ -1,16 +1,31 @@
 ExUnit.start()
 
+Application.put_env(Prometheus.EctoInstrumenter, Prometheus.EctoInstrumenter.TestRepo,
+  [otp_app: Prometheus.EctoInstrumenter,
+   loggers: [Ecto.LogEntry,
+             TestEctoInstrumenter,
+             TestEctoInstrumenterWithConfig],
+   adapter: Ecto.Adapters.MySQL,
+   pool: Ecto.Adapters.SQL.Sandbox,
+   url: "ecto://" <> (System.get_env("MYSQL_URL") || "root@localhost") <> "/ecto_instrumenter_test"])
+
+Application.put_env(:prometheus, TestEctoInstrumenterWithConfig,
+  labels: [:custom_label],
+  registry: :qwe,
+  stages: [:queue, :query],
+  query_duration_buckets: [100, 200])
+
 defmodule TestEctoInstrumenter do
   use Prometheus.EctoInstrumenter
 end
 
-Application.put_env(Prometheus.EctoInstrumenter, Prometheus.EctoInstrumenter.TestRepo,
-  [otp_app: Prometheus.EctoInstrumenter,
-   loggers: [Ecto.LogEntry,
-             TestEctoInstrumenter],
-   adapter: Ecto.Adapters.MySQL,
-   pool: Ecto.Adapters.SQL.Sandbox,
-   url: "ecto://" <> (System.get_env("MYSQL_URL") || "root@localhost") <> "/ecto_instrumenter_test"])
+defmodule TestEctoInstrumenterWithConfig do
+  use Prometheus.EctoInstrumenter
+
+  def label_value(:custom_label, _) do
+    "custom_label"
+  end
+end
 
 defmodule Prometheus.EctoInstrumenter.TestRepo do
   use Ecto.Repo, otp_app: Prometheus.EctoInstrumenter
@@ -42,7 +57,6 @@ defmodule Prometheus.EctoInstrumenter.Migration do
   end
 end
 
-TestEctoInstrumenter.setup()
 Application.ensure_all_started(:mariaex)
 Mix.Task.run "ecto.create", ~w(-r Prometheus.EctoInstrumenter.TestRepo)
 {:ok, _pid} = Prometheus.EctoInstrumenter.TestRepo.start_link
