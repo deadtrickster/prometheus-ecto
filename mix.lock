@@ -6,5 +6,5 @@
   "ex_doc": {:hex, :ex_doc, "0.13.0", "aa2f8fe4c6136a2f7cfc0a7e06805f82530e91df00e2bff4b4362002b43ada65", [:mix], [{:earmark, "~> 1.0", [hex: :earmark, optional: false]}]},
   "mariaex": {:hex, :mariaex, "0.7.7", "620a636ec2276c3fa031ac528039fc9d2bf7992e050e37a56b3c796511e94d6d", [:mix], [{:db_connection, "~> 1.0.0-rc", [hex: :db_connection, optional: false]}, {:decimal, "~> 1.0", [hex: :decimal, optional: false]}]},
   "poolboy": {:hex, :poolboy, "1.5.1", "6b46163901cfd0a1b43d692657ed9d7e599853b3b21b95ae5ae0a777cf9b6ca8", [:rebar], []},
-  "prometheus": {:hex, :prometheus, "3.0.0-alpha1", "a547a71d32020adf2197d4e457cdb83cf63ecdb73bb2716b13d542f346255ea0", [:rebar3], []},
-  "prometheus_ex": {:hex, :prometheus_ex, "1.0.0-alpha3", "16bc33d3ec20c078e0b099a67b56f103405f27f6a00dac1cf8f41f97a881faf4", [:mix], [{:prometheus, "~> 3.0.0-alpha1", [hex: :prometheus, optional: false]}]}}
+  "prometheus": {:hex, :prometheus, "3.0.0-alpha4", "17e5b909979abbeea0ad4eabcb2c860da882c9b61d67dbfb0c644885cfd76896", [:rebar3], []},
+  "prometheus_ex": {:hex, :prometheus_ex, "1.0.0-alpha4", "d8827d5a6142f3ce8ca6bf868185e90bd3fb560853c91034d76cadcf3e01acf0", [:mix], [{:prometheus, "~> 3.0.0-alpha4", [hex: :prometheus, optional: false]}]}}

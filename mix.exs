@@ -1,7 +1,7 @@
 defmodule PrometheusEcto.Mixfile do
   use Mix.Project
 
-  @version "1.0.0-alpha3"
+  @version "1.0.0-alpha4"
 
   def project do
     [app: :prometheus_ecto,
@@ -39,7 +39,7 @@ defmodule PrometheusEcto.Mixfile do
   end
 
   defp deps do
-    [{:prometheus_ex, "~> 1.0.0-alpha3"},
+    [{:prometheus_ex, "~> 1.0.0-alpha4"},
      {:ecto, "~> 2.0"},
      {:mariaex, ">= 0.0.0", only: :test},
      {:ex_doc, "~> 0.11", only: :dev},
