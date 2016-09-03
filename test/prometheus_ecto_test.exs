@@ -14,7 +14,6 @@ defmodule PrometheusEctoTest do
   alias Prometheus.EctoInstrumenter.TestSchema
   alias Prometheus.EctoInstrumenter.TestRepo
   use Prometheus.Metric
-  alias Prometheus.Error.UnknownMetric
 
 
   test "the truth" do
@@ -95,7 +94,7 @@ defmodule PrometheusEctoTest do
     assert sum > 0
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
-    assert_raise UnknownMetric, fn ->
+    assert_raise Prometheus.UnknownMetricError, fn ->
       Histogram.value([name: :ecto_decode_duration_microseconds,
                        registry: :qwe,
                        labels: ["custom_label"]])
@@ -127,7 +126,7 @@ defmodule PrometheusEctoTest do
     assert sum > 0
     assert 4 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
-    assert_raise UnknownMetric, fn ->
+    assert_raise Prometheus.UnknownMetricError, fn ->
       Histogram.value([name: :ecto_decode_duration_microseconds,
                        registry: :qwe,
                        labels: ["custom_label"]])
