@@ -13,7 +13,8 @@ Application.put_env(:prometheus, TestEctoInstrumenterWithConfig,
   labels: [:custom_label],
   registry: :qwe,
   stages: [:queue, :query],
-  query_duration_buckets: [100, 200])
+  query_duration_buckets: [100, 200],
+  duration_unit: :seconds)
 
 defmodule TestEctoInstrumenter do
   use Prometheus.EctoInstrumenter

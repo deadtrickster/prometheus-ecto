@@ -39,13 +39,13 @@ defmodule Prometheus.EctoInstrumenter do
   stage or query can be cashed, etc.
 
   You can instrument these stages separately
-   - queue - `ecto_queue_duration_microseconds`
-   - query - `ecto_db_query_duration_microseconds`
-   - decode - `ecto_decode_duration_microseconds`.
+   - queue - `ecto_queue_duration_<duration_unit>`
+   - query - `ecto_db_query_duration_<duration_unit>`
+   - decode - `ecto_decode_duration_<duration_unit>`.
 
   Stages can be disabled/enabled via configuration. By default all stages are enabled.
 
-  There is also `ecto_query_duration_microseconds` metric that observers total query execution time.
+  There is also `ecto_query_duration_<duration_unit>` metric that observers total query execution time.
   Basically it sums non-nil stages.
 
   Default labels:
@@ -65,11 +65,21 @@ defmodule Prometheus.EctoInstrumenter do
     query_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000,
                              500_000, 750_000, 1_000_000, 1_500_000,
                              2_000_000, 3_000_000],
-    registry: :default
+    registry: :default,
+    duration_unit: :microseconds
 
   ```
 
-  Bear in mind that bounds are ***microseconds*** (1s is 1_000_000us)
+  Available duration units:
+   - microseconds;
+   - milliseconds;
+   - seconds;
+   - minutes;
+   - hours;
+   - days.
+
+  Bear in mind that buckets are ***<duration_unit>*** so if you are not using default unit
+  you also have to override buckets.
 
   ### Custom Labels
 
@@ -98,7 +108,8 @@ defmodule Prometheus.EctoInstrumenter do
                           query_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000,
                                                    500_000, 750_000, 1_000_000, 1_500_000,
                                                    2_000_000, 3_000_000],
-                          registry: :default]
+                          registry: :default,
+                          duration_unit: :microseconds]
 
   use Prometheus.Metric
 
@@ -111,6 +122,7 @@ defmodule Prometheus.EctoInstrumenter do
     stages = Config.stages(module_name)
     registry = Config.registry(module_name)
     query_duration_buckets = Config.query_duration_buckets(module_name)
+    duration_unit = Config.duration_unit(module_name)
 
     quote do
 
@@ -120,16 +132,16 @@ defmodule Prometheus.EctoInstrumenter do
         unquote_splicing(
           for stage <- stages do
             quote do
-              Histogram.declare([name: unquote(stage_metric_name(stage)),
-                                 help: unquote(stage_metric_help(stage)),
+              Histogram.declare([name: unquote(stage_metric_name(stage, duration_unit)),
+                                 help: unquote(stage_metric_help(stage, duration_unit)),
                                  labels: unquote(nlabels),
                                  buckets: unquote(query_duration_buckets),
                                  registry: unquote(registry)])
             end
           end)
 
-        Histogram.declare([name: :ecto_query_duration_microseconds,
-                           help: "Total Ecto query time",
+        Histogram.declare([name: unquote(:"ecto_query_duration_#{duration_unit}"),
+                           help: unquote("Total Ecto query time in #{duration_unit}."),
                            labels: unquote(nlabels),
                            buckets: unquote(query_duration_buckets),
                            registry: unquote(registry)])
@@ -145,7 +157,7 @@ defmodule Prometheus.EctoInstrumenter do
                 value = unquote(stage_value(stage))
                 if value != nil do
                   Histogram.observe([registry: unquote(registry),
-                                     name: unquote(stage_metric_name(stage)),
+                                     name: unquote(stage_metric_name(stage, duration_unit)),
                                      labels: labels], microseconds_time(value))
                 end
               end
@@ -154,7 +166,7 @@ defmodule Prometheus.EctoInstrumenter do
         end
 
         Histogram.observe([registry: unquote(registry),
-                           name: :ecto_query_duration_microseconds,
+                           name: unquote(:"ecto_query_duration_#{duration_unit}"),
                            labels: labels], total_value(entry))
         entry
       end
@@ -188,13 +200,13 @@ defmodule Prometheus.EctoInstrumenter do
     end
   end
 
-  defp stage_metric_name(:queue), do: :ecto_queue_duration_microseconds
-  defp stage_metric_name(:query), do: :ecto_db_query_duration_microseconds
-  defp stage_metric_name(:decode), do: :ecto_decode_duration_microseconds
+  defp stage_metric_name(:queue, duration_unit), do: :"ecto_queue_duration_#{duration_unit}"
+  defp stage_metric_name(:query, duration_unit), do: :"ecto_db_query_duration_#{duration_unit}"
+  defp stage_metric_name(:decode, duration_unit), do: :"ecto_decode_duration_#{duration_unit}"
 
-  defp stage_metric_help(:queue), do: "The time spent to check the connection out in microseconds."
-  defp stage_metric_help(:query), do: "The time spent executing the DB query in microseconds."
-  defp stage_metric_help(:decode), do: "The time spent decoding the result in microseconds."
+  defp stage_metric_help(:queue, duration_unit), do: "The time spent to check the connection out in #{duration_unit}."
+  defp stage_metric_help(:query, duration_unit), do: "The time spent executing the DB query in #{duration_unit}."
+  defp stage_metric_help(:decode, duration_unit), do: "The time spent decoding the result in #{duration_unit}."
 
   defp construct_labels(labels) do
     for label <- labels, do: label_value(label)

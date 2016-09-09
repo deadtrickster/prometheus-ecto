@@ -25,7 +25,7 @@ defmodule PrometheusEctoTest do
     assert result.rows == [[1]]
     assert {buckets, sum} = Histogram.value([name: :ecto_query_duration_microseconds,
                                              labels: [:ok]])
-    assert sum > 0
+    assert sum > 0.1
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
     assert {buckets, sum} = Histogram.value([name: :ecto_queue_duration_microseconds,
@@ -35,7 +35,7 @@ defmodule PrometheusEctoTest do
 
     assert {buckets, sum} = Histogram.value([name: :ecto_db_query_duration_microseconds,
                                              labels: [:ok]])
-    assert sum > 0
+    assert sum > 0.1
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
     assert {buckets, sum} = Histogram.value([name: :ecto_decode_duration_microseconds,
@@ -50,7 +50,7 @@ defmodule PrometheusEctoTest do
 
     assert {buckets, sum} = Histogram.value([name: :ecto_query_duration_microseconds,
                                              labels: [:ok]])
-    assert sum > 0
+    assert sum > 0.1
     assert 4 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
     assert {buckets, sum} = Histogram.value([name: :ecto_queue_duration_microseconds,
@@ -60,7 +60,7 @@ defmodule PrometheusEctoTest do
 
     assert {buckets, sum} = Histogram.value([name: :ecto_db_query_duration_microseconds,
                                              labels: [:ok]])
-    assert sum > 0
+    assert sum > 0.1
     assert 4 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
     assert {buckets, sum} = Histogram.value([name: :ecto_decode_duration_microseconds,
@@ -73,29 +73,29 @@ defmodule PrometheusEctoTest do
 
     result = TestRepo.query!("SELECT 1")
     assert result.rows == [[1]]
-    assert {buckets, sum} = Histogram.value([name: :ecto_query_duration_microseconds,
+    assert {buckets, sum} = Histogram.value([name: :ecto_query_duration_seconds,
                                              registry: :qwe,
                                              labels: ["custom_label"]])
     assert 3 = length(buckets)
-    assert sum > 0
+    assert sum < 1
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
-    assert {buckets, sum} = Histogram.value([name: :ecto_queue_duration_microseconds,
+    assert {buckets, sum} = Histogram.value([name: :ecto_queue_duration_seconds,
                                              registry: :qwe,
                                              labels: ["custom_label"]])
     assert 3 = length(buckets)
-    assert sum > 0
+    assert sum < 1
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
-    assert {buckets, sum} = Histogram.value([name: :ecto_db_query_duration_microseconds,
+    assert {buckets, sum} = Histogram.value([name: :ecto_db_query_duration_seconds,
                                              registry: :qwe,
                                              labels: ["custom_label"]])
     assert 3 = length(buckets)
-    assert sum > 0
+    assert sum < 1
     assert 1 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
     assert_raise Prometheus.UnknownMetricError, fn ->
-      Histogram.value([name: :ecto_decode_duration_microseconds,
+      Histogram.value([name: :ecto_decode_duration_seconds,
                        registry: :qwe,
                        labels: ["custom_label"]])
     end
@@ -105,29 +105,29 @@ defmodule PrometheusEctoTest do
     ## transactioned insertion - there should be queries with queue/decode_time=nil
     {:ok, _} = TestRepo.transaction(fn -> TestRepo.insert(changeset) end)
 
-    assert {buckets, sum} = Histogram.value([name: :ecto_query_duration_microseconds,
+    assert {buckets, sum} = Histogram.value([name: :ecto_query_duration_seconds,
                                              registry: :qwe,
                                              labels: ["custom_label"]])
     assert 3 = length(buckets)
-    assert sum > 0
+    assert sum < 1
     assert 4 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
-    assert {buckets, sum} = Histogram.value([name: :ecto_queue_duration_microseconds,
+    assert {buckets, sum} = Histogram.value([name: :ecto_queue_duration_seconds,
                                              registry: :qwe,
                                              labels: ["custom_label"]])
     assert 3 = length(buckets)
-    assert sum > 0
+    assert sum < 1
     assert 2 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
-    assert {buckets, sum} = Histogram.value([name: :ecto_db_query_duration_microseconds,
+    assert {buckets, sum} = Histogram.value([name: :ecto_db_query_duration_seconds,
                                              registry: :qwe,
                                              labels: ["custom_label"]])
     assert 3 = length(buckets)
-    assert sum > 0
+    assert sum < 1
     assert 4 = Enum.reduce(buckets, fn(x, acc) -> x + acc end)
 
     assert_raise Prometheus.UnknownMetricError, fn ->
-      Histogram.value([name: :ecto_decode_duration_microseconds,
+      Histogram.value([name: :ecto_decode_duration_seconds,
                        registry: :qwe,
                        labels: ["custom_label"]])
     end
