@@ -1,17 +1,22 @@
 defmodule PrometheusEcto.Mixfile do
   use Mix.Project
 
+  @version "1.0.0-rc1"
+
   def project do
     [app: :prometheus_ecto,
-     version: "0.0.6",
+     version: @version,
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      description: description,
      package: package,
-     deps: deps()]
+     deps: deps(),
+     docs: [main: Prometheus.EctoInstrumenter,
+            source_ref: "v#{@version}",
+            source_url: "https://github.com/deadtrickster/prometheus-ecto"]]
   end
-  
+
   def application do
     [applications: [:logger, :prometheus_ex]]
   end
@@ -20,7 +25,7 @@ defmodule PrometheusEcto.Mixfile do
     """
     Prometheus monitoring system client Ecto integration. Observes queries duration.
     """
-  end  
+  end
 
   defp package do
     [maintainers: ["Ilya Khaprov"],
@@ -32,10 +37,12 @@ defmodule PrometheusEcto.Mixfile do
               "Phoenix Instrumenter" => "https://hex.pm/packages/prometheus_phoenix",
               "Process info Collector" => "https://hex.pm/packages/prometheus_process_collector"}]
   end
-  
+
   defp deps do
-    [{:prometheus_ex, "~> 0.0.3"},
+    [{:prometheus_ex, "~> 1.0.0-rc1"},
      {:ecto, "~> 2.0"},
-     {:mariaex, ">= 0.0.0", only: :test}]
+     {:mariaex, ">= 0.0.0", only: :test},
+     {:ex_doc, "~> 0.11", only: :dev},
+     {:earmark, ">= 0.0.0", only: :dev}]
   end
 end

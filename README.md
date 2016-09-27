@@ -1,141 +1,41 @@
-# PrometheusEcto [![Hex.pm](https://img.shields.io/hexpm/v/prometheus_ecto.svg?maxAge=2592000)](https://hex.pm/packages/prometheus_ecto) [![Build Status](https://travis-ci.org/deadtrickster/prometheus-ecto.svg?branch=master)](https://travis-ci.org/deadtrickster/prometheus-ecto)
+# Prometheus.io Ecto Instrumenter
+[![Hex.pm](https://img.shields.io/hexpm/v/prometheus_ecto.svg?maxAge=2592000)](https://hex.pm/packages/prometheus_ecto) [![Build Status](https://travis-ci.org/deadtrickster/prometheus-ecto.svg?branch=master)](https://travis-ci.org/deadtrickster/prometheus-ecto)  [![Documentation](https://img.shields.io/badge/documentation-on%20hexdocs-green.svg)](https://hexdocs.pm/prometheus_ecto/1.0.0-alpha4/)
 
-## Setup
+Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus.ex)
 
-On app/supervisor start:
+## Quickstart
 
-```elixir
-    Prometheus.EctoInstrumenter.setup()
-```
+1. Define your instrumenter:
 
-In your Repo config:
+  ```elixir
+  defmodule MyApp.Repo.Instrumenter do
+    use Prometheus.EctoInstrumenter
+  end
+  ```
 
-```elixir
-  ...
-  loggers: [Ecto.LogEntry, Prometheus.EctoInstrumenter]
-  ....
-```
+2. Call `MyApp.Repo.Instrumenter.setup/0` when application starts (e.g. supervisor setup):
 
-## Configuration
+  ```elixir
+  MyApp.Repo.Instrumenter.setup()
+  ```
 
-This integartion is configured via `EctoInstrumenter` `:prometheus` app env key
+3. Add `MyApp.Repo.Instrumenter` to Repo loggers list:
 
-Default configuration:
+  ```elixir
+  config :myapp, MyApp.Repo,
+    ...
+    loggers: [MyApp.Repo.Instrumenter, Ecto.LogEntry]
+    ...
+  ```
 
-```elixir
-config :prometheus, EctoInstrumenter,
-  labels: [:result],
-  stages: [:queue, :query, :decode],
-  query_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000,
-                           500_000, 750_000, 1_000_000, 1_500_000,
-                           2_000_000, 3_000_000]
-``` 
-
-Duration units are **microseconds**. 
-You can find more on what stages are available and their description [here](https://hexdocs.pm/ecto/Ecto.LogEntry.html).
-
-With this configuration scrape will look like this:
-
-```
-# TYPE ecto_decode_duration_microseconds histogram
-# HELP ecto_decode_duration_microseconds The time spent decoding the result in microseconds.
-ecto_decode_duration_microseconds_bucket{result="ok",le="10"} 0
-ecto_decode_duration_microseconds_bucket{result="ok",le="100"} 72
-ecto_decode_duration_microseconds_bucket{result="ok",le="1000"} 147
-ecto_decode_duration_microseconds_bucket{result="ok",le="10000"} 148
-ecto_decode_duration_microseconds_bucket{result="ok",le="100000"} 148
-ecto_decode_duration_microseconds_bucket{result="ok",le="300000"} 148
-ecto_decode_duration_microseconds_bucket{result="ok",le="500000"} 148
-ecto_decode_duration_microseconds_bucket{result="ok",le="750000"} 148
-ecto_decode_duration_microseconds_bucket{result="ok",le="1000000"} 148
-ecto_decode_duration_microseconds_bucket{result="ok",le="1500000"} 148
-ecto_decode_duration_microseconds_bucket{result="ok",le="2000000"} 148
-ecto_decode_duration_microseconds_bucket{result="ok",le="3000000"} 148
-ecto_decode_duration_microseconds_bucket{result="ok",le="+Inf"} 148
-ecto_decode_duration_microseconds_count{result="ok"} 148
-ecto_decode_duration_microseconds_sum{result="ok"} 26736
-# TYPE ecto_query_duration_microseconds histogram
-# HELP ecto_query_duration_microseconds Total Ecto query time
-ecto_query_duration_microseconds_bucket{result="ok",le="10"} 0
-ecto_query_duration_microseconds_bucket{result="ok",le="100"} 0
-ecto_query_duration_microseconds_bucket{result="ok",le="1000"} 0
-ecto_query_duration_microseconds_bucket{result="ok",le="10000"} 0
-ecto_query_duration_microseconds_bucket{result="ok",le="100000"} 0
-ecto_query_duration_microseconds_bucket{result="ok",le="300000"} 0
-ecto_query_duration_microseconds_bucket{result="ok",le="500000"} 5
-ecto_query_duration_microseconds_bucket{result="ok",le="750000"} 16
-ecto_query_duration_microseconds_bucket{result="ok",le="1000000"} 25
-ecto_query_duration_microseconds_bucket{result="ok",le="1500000"} 55
-ecto_query_duration_microseconds_bucket{result="ok",le="2000000"} 77
-ecto_query_duration_microseconds_bucket{result="ok",le="3000000"} 111
-ecto_query_duration_microseconds_bucket{result="ok",le="+Inf"} 162
-ecto_query_duration_microseconds_count{result="ok"} 162
-ecto_query_duration_microseconds_sum{result="ok"} 790092483
-ecto_query_duration_microseconds_bucket{result="error",le="10"} 0
-ecto_query_duration_microseconds_bucket{result="error",le="100"} 0
-ecto_query_duration_microseconds_bucket{result="error",le="1000"} 0
-ecto_query_duration_microseconds_bucket{result="error",le="10000"} 0
-ecto_query_duration_microseconds_bucket{result="error",le="100000"} 0
-ecto_query_duration_microseconds_bucket{result="error",le="300000"} 0
-ecto_query_duration_microseconds_bucket{result="error",le="500000"} 0
-ecto_query_duration_microseconds_bucket{result="error",le="750000"} 0
-ecto_query_duration_microseconds_bucket{result="error",le="1000000"} 0
-ecto_query_duration_microseconds_bucket{result="error",le="1500000"} 0
-ecto_query_duration_microseconds_bucket{result="error",le="2000000"} 1
-ecto_query_duration_microseconds_bucket{result="error",le="3000000"} 6
-ecto_query_duration_microseconds_bucket{result="error",le="+Inf"} 6
-ecto_query_duration_microseconds_count{result="error"} 6
-ecto_query_duration_microseconds_sum{result="error"} 14308854
-# TYPE ecto_db_query_duration_microseconds histogram
-# HELP ecto_db_query_duration_microseconds The time spent executing the DB query in microseconds.
-ecto_db_query_duration_microseconds_bucket{result="ok",le="10"} 0
-ecto_db_query_duration_microseconds_bucket{result="ok",le="100"} 0
-ecto_db_query_duration_microseconds_bucket{result="ok",le="1000"} 53
-ecto_db_query_duration_microseconds_bucket{result="ok",le="10000"} 146
-ecto_db_query_duration_microseconds_bucket{result="ok",le="100000"} 162
-ecto_db_query_duration_microseconds_bucket{result="ok",le="300000"} 162
-ecto_db_query_duration_microseconds_bucket{result="ok",le="500000"} 162
-ecto_db_query_duration_microseconds_bucket{result="ok",le="750000"} 162
-ecto_db_query_duration_microseconds_bucket{result="ok",le="1000000"} 162
-ecto_db_query_duration_microseconds_bucket{result="ok",le="1500000"} 162
-ecto_db_query_duration_microseconds_bucket{result="ok",le="2000000"} 162
-ecto_db_query_duration_microseconds_bucket{result="ok",le="3000000"} 162
-ecto_db_query_duration_microseconds_bucket{result="ok",le="+Inf"} 162
-ecto_db_query_duration_microseconds_count{result="ok"} 162
-ecto_db_query_duration_microseconds_sum{result="ok"} 697637
-ecto_db_query_duration_microseconds_bucket{result="error",le="10"} 0
-ecto_db_query_duration_microseconds_bucket{result="error",le="100"} 0
-ecto_db_query_duration_microseconds_bucket{result="error",le="1000"} 0
-ecto_db_query_duration_microseconds_bucket{result="error",le="10000"} 6
-ecto_db_query_duration_microseconds_bucket{result="error",le="100000"} 6
-ecto_db_query_duration_microseconds_bucket{result="error",le="300000"} 6
-ecto_db_query_duration_microseconds_bucket{result="error",le="500000"} 6
-ecto_db_query_duration_microseconds_bucket{result="error",le="750000"} 6
-ecto_db_query_duration_microseconds_bucket{result="error",le="1000000"} 6
-ecto_db_query_duration_microseconds_bucket{result="error",le="1500000"} 6
-ecto_db_query_duration_microseconds_bucket{result="error",le="2000000"} 6
-ecto_db_query_duration_microseconds_bucket{result="error",le="3000000"} 6
-ecto_db_query_duration_microseconds_bucket{result="error",le="+Inf"} 6
-ecto_db_query_duration_microseconds_count{result="error"} 6
-ecto_db_query_duration_microseconds_sum{result="error"} 14306
-# TYPE ecto_queue_duration_microseconds histogram
-# HELP ecto_queue_duration_microseconds The time spent to check the connection out in microseconds.
-ecto_queue_duration_microseconds_bucket{result="ok",le="10"} 0
-ecto_queue_duration_microseconds_bucket{result="ok",le="100"} 34
-ecto_queue_duration_microseconds_bucket{result="ok",le="1000"} 143
-ecto_queue_duration_microseconds_bucket{result="ok",le="10000"} 154
-ecto_queue_duration_microseconds_bucket{result="ok",le="100000"} 154
-ecto_queue_duration_microseconds_bucket{result="ok",le="300000"} 154
-ecto_queue_duration_microseconds_bucket{result="ok",le="500000"} 154
-ecto_queue_duration_microseconds_bucket{result="ok",le="750000"} 154
-ecto_queue_duration_microseconds_bucket{result="ok",le="1000000"} 154
-ecto_queue_duration_microseconds_bucket{result="ok",le="1500000"} 154
-ecto_queue_duration_microseconds_bucket{result="ok",le="2000000"} 154
-ecto_queue_duration_microseconds_bucket{result="ok",le="3000000"} 154
-ecto_queue_duration_microseconds_bucket{result="ok",le="+Inf"} 154
-ecto_queue_duration_microseconds_count{result="ok"} 154
-ecto_queue_duration_microseconds_sum{result="ok"} 65503
-```
+## Integrations / Collectors / Instrumenters
+ - [Ecto collector](https://github.com/deadtrickster/prometheus-ecto)
+ - [Plugs Instrumenter/Exporter](https://github.com/deadtrickster/prometheus-plugs)
+ - [Elli middleware](https://github.com/elli-lib/elli_prometheus)
+ - [Fuse plugin](https://github.com/jlouis/fuse#fuse_stats_prometheus)
+ - [Phoenix instrumenter](https://github.com/deadtrickster/prometheus-phoenix)
+ - [Process Info Collector](https://github.com/deadtrickster/prometheus_process_collector.erl)
+ - [RabbitMQ Exporter](https://github.com/deadtrickster/prometheus_rabbitmq_exporter)
 
 ## Installation
 
@@ -145,7 +45,7 @@ ecto_queue_duration_microseconds_sum{result="ok"} 65503
 
     ```elixir
     def deps do
-      [{:prometheus_ecto, "~> 0.0.4"}]
+      [{:prometheus_ecto, "~> 1.0.0-alpha4"}]
     end
     ```
 
