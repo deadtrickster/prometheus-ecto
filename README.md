@@ -6,6 +6,9 @@
 
 Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus.ex)
 
+ - IRC: #elixir-lang on Freenode;
+ - [Slack](https://elixir-slackin.herokuapp.com/): #prometheus channel - [Browser](https://elixir-lang.slack.com/messages/prometheus) or App(slack://elixir-lang.slack.com/messages/prometheus).
+
 ## Quickstart
 
 1. Define your instrumenter:
