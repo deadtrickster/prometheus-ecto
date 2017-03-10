@@ -1,7 +1,7 @@
 defmodule PrometheusEcto.Mixfile do
   use Mix.Project
 
-  @version "1.0.1"
+  @version "1.0.2"
 
   def project do
     [app: :prometheus_ecto,
@@ -9,8 +9,8 @@ defmodule PrometheusEcto.Mixfile do
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     description: description,
-     package: package,
+     description: description(),
+     package: package(),
      deps: deps(),
      docs: [main: Prometheus.EctoInstrumenter,
             source_ref: "v#{@version}",
