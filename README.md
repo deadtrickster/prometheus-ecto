@@ -13,26 +13,25 @@ Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus
 
 1. Define your instrumenter:
 
-  ```elixir
-  defmodule MyApp.Repo.Instrumenter do
-    use Prometheus.EctoInstrumenter
-  end
-  ```
+    ```elixir
+    defmodule MyApp.Repo.Instrumenter do
+      use Prometheus.EctoInstrumenter
+    end
+    ```
 
 2. Call `MyApp.Repo.Instrumenter.setup/0` when application starts (e.g. supervisor setup):
 
-  ```elixir
-  MyApp.Repo.Instrumenter.setup()
-  ```
+    ```elixir
+    MyApp.Repo.Instrumenter.setup()
+    ```
 
 3. Add `MyApp.Repo.Instrumenter` to Repo loggers list:
 
-  ```elixir
-  config :myapp, MyApp.Repo,
-    ...
-    loggers: [MyApp.Repo.Instrumenter, Ecto.LogEntry]
-    ...
-  ```
+    ```elixir
+    config :myapp, MyApp.Repo,
+      loggers: [MyApp.Repo.Instrumenter, Ecto.LogEntry]
+      # ...
+    ```
 
 ## Integrations / Collectors / Instrumenters
  - [Ecto collector](https://github.com/deadtrickster/prometheus-ecto)
@@ -49,17 +48,16 @@ Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus
 
   1. Add `prometheus_ecto` to your list of dependencies in `mix.exs`:
 
-    ```elixir
-    def deps do
-      [{:prometheus_ecto, "~> 1.0.1"}]
-    end
-    ```
+      ```elixir
+      def deps do
+        [{:prometheus_ecto, "~> 1.0.1"}]
+      end
+      ```
 
   2. Ensure `prometheus_ecto` is started before your application:
 
-    ```elixir
-    def application do
-      [applications: [:prometheus_ecto]]
-    end
-    ```
-
+      ```elixir
+      def application do
+        [applications: [:prometheus_ecto]]
+      end
+      ```
