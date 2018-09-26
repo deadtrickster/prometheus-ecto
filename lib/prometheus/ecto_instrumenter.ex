@@ -213,7 +213,7 @@ defmodule Prometheus.EctoInstrumenter do
       end
 
       defp microseconds_time(time) do
-        System.convert_time_unit(time, :native, :micro_seconds)
+        System.convert_time_unit(time, :native, :microseconds)
       end
     end
   end
