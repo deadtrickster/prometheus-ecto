@@ -16,6 +16,7 @@ Application.put_env(
   labels: [:custom_label],
   registry: :qwe,
   stages: [:queue, :query],
+  counter: true,
   query_duration_buckets: [100, 200],
   duration_unit: :seconds
 )

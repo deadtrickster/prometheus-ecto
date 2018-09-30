@@ -48,6 +48,9 @@ defmodule Prometheus.EctoInstrumenter do
   There is also `ecto_query_duration_<duration_unit>` metric that observers total query execution time.
   Basically it sums non-nil stages.
 
+  There's an ability to count total amount of Ecto queries. It is disabled by default, to enable set 
+  `counter: true` in configuration for your instrumenter module then you can instrument it via `ecto_queries_total`.
+
   Default labels:
    - `:result`
 
@@ -61,6 +64,7 @@ defmodule Prometheus.EctoInstrumenter do
   ```elixir
   config :prometheus, MyApp.Repo.Instrumenter,
     stages: [:queue, :query, :decode],
+    counter: false,
     labels: [:result],
     query_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000,
                              500_000, 750_000, 1_000_000, 1_500_000,
@@ -105,6 +109,7 @@ defmodule Prometheus.EctoInstrumenter do
 
   use Prometheus.Config,
     stages: [:queue, :query, :decode],
+    counter: false,
     labels: [:result],
     query_duration_buckets: [
       10,
@@ -132,6 +137,7 @@ defmodule Prometheus.EctoInstrumenter do
     labels = Config.labels(module_name)
     nlabels = normalize_labels(labels)
     stages = Config.stages(module_name)
+    counter = Config.counter(module_name)
     registry = Config.registry(module_name)
     query_duration_buckets = Config.query_duration_buckets(module_name)
     duration_unit = Config.duration_unit(module_name)
@@ -161,6 +167,15 @@ defmodule Prometheus.EctoInstrumenter do
           buckets: unquote(query_duration_buckets),
           registry: unquote(registry)
         )
+
+        if unquote(counter) do
+          Counter.declare(
+            name: :ecto_queries_total,
+            help:  "Total number of Ecto queries made.",
+            labels: unquote(nlabels),
+            registry: unquote(registry)
+          )
+        end
       end
 
       def log(entry) do
@@ -195,6 +210,14 @@ defmodule Prometheus.EctoInstrumenter do
           ],
           total_value(entry)
         )
+
+        if unquote(counter) do
+          Counter.inc(
+            registry: unquote(registry),
+            name: :ecto_queries_total,
+            labels: labels
+          )
+        end
 
         entry
       end
