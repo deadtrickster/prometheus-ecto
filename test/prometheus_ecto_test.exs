@@ -23,6 +23,12 @@ defmodule PrometheusEctoTest do
     result = TestRepo.query!("SELECT 1")
     assert result.rows == [[1]]
 
+    assert_raise Prometheus.UnknownMetricError, fn ->
+      Counter.value(
+        name: :ecto_queries_total
+      )
+    end
+
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_query_duration_microseconds,
@@ -115,6 +121,13 @@ defmodule PrometheusEctoTest do
     assert 3 = length(buckets)
     assert sum < 1
     assert 1 = Enum.reduce(buckets, fn x, acc -> x + acc end)
+
+    assert 1 ==
+             Counter.value(
+               name: :ecto_queries_total,
+               registry: :qwe,
+               labels: ["custom_label"]
+             )
 
     assert {buckets, sum} =
              Histogram.value(
