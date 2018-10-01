@@ -65,8 +65,9 @@ end
 
 Application.ensure_all_started(:mariaex)
 Mix.Task.run("ecto.create", ~w(-r Prometheus.EctoInstrumenter.TestRepo))
+Application.ensure_all_started(:mariaex)
+Application.ensure_all_started(:ecto)
 {:ok, _pid} = Prometheus.EctoInstrumenter.TestRepo.start_link()
-{:ok, _pid} = Ecto.Migration.Supervisor.start_link()
 
 Ecto.Migrator.up(
   Prometheus.EctoInstrumenter.TestRepo,
