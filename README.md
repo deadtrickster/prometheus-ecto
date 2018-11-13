@@ -25,12 +25,22 @@ Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus
     MyApp.Repo.Instrumenter.setup()
     ```
 
-3. Add `MyApp.Repo.Instrumenter` to Repo loggers list:
-
+3. If using Ecto 2, add `MyApp.Repo.Instrumenter` to Repo loggers list:
     ```elixir
     config :myapp, MyApp.Repo,
       loggers: [MyApp.Repo.Instrumenter, Ecto.LogEntry]
       # ...
+    ```
+    If using Ecto 3, attach to telemetry in your application start function:
+
+    ```elixir
+    Telemetry.attach(
+      "prometheus-ecto",
+      [:my_app, :repo, :query],
+      MayApp.Repo.Instrumenter,
+      :handle_event,
+      nil
+    )
     ```
 
 ## Integrations / Collectors / Instrumenters

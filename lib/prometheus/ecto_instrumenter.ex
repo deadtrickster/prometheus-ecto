@@ -178,6 +178,10 @@ defmodule Prometheus.EctoInstrumenter do
         end
       end
 
+      def handle_event(_event, _latency, metadata, _config) do
+        log(metadata)
+      end
+
       def log(entry) do
         labels = unquote(construct_labels(labels))
 
