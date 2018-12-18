@@ -60,7 +60,7 @@ Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus
 
       ```elixir
       def deps do
-        [{:prometheus_ecto, "~> 1.3.1"}]
+        [{:prometheus_ecto, "~> 1.4.1"}]
       end
       ```
 
