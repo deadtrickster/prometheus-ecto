@@ -34,13 +34,14 @@ Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus
     If using Ecto 3, attach to telemetry in your application start function:
 
     ```elixir
-    Telemetry.attach(
-      "prometheus-ecto",
-      [:my_app, :repo, :query],
-      MayApp.Repo.Instrumenter,
-      :handle_event,
-      nil
-    )
+    :ok =
+      Telemetry.attach(
+        "prometheus-ecto",
+        [:my_app, :repo, :query],
+        MyApp.Repo.Instrumenter,
+        :handle_event,
+        %{}
+      )
     ```
 
 ## Integrations / Collectors / Instrumenters
