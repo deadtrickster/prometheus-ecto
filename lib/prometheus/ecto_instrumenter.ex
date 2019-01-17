@@ -48,7 +48,7 @@ defmodule Prometheus.EctoInstrumenter do
   There is also `ecto_query_duration_<duration_unit>` metric that observers total query execution time.
   Basically it sums non-nil stages.
 
-  There's an ability to count total amount of Ecto queries. It is disabled by default, to enable set 
+  There's an ability to count total amount of Ecto queries. It is disabled by default, to enable set
   `counter: true` in configuration for your instrumenter module then you can instrument it via `ecto_queries_total`.
 
   Default labels:
@@ -171,7 +171,7 @@ defmodule Prometheus.EctoInstrumenter do
         if unquote(counter) do
           Counter.declare(
             name: :ecto_queries_total,
-            help:  "Total number of Ecto queries made.",
+            help: "Total number of Ecto queries made.",
             labels: unquote(nlabels),
             registry: unquote(registry)
           )
@@ -240,7 +240,7 @@ defmodule Prometheus.EctoInstrumenter do
       end
 
       defp microseconds_time(time) do
-        System.convert_time_unit(time, :native, :microseconds)
+        System.convert_time_unit(time, :native, :microsecond)
       end
     end
   end
