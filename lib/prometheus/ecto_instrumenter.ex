@@ -178,6 +178,19 @@ defmodule Prometheus.EctoInstrumenter do
         end
       end
 
+      def handle_event(
+            _event,
+            %{query_time: query_time, queue_time: queue_time, decode_time: decode_time},
+            metadata,
+            _config
+          ) do
+        metadata
+        |> Map.put(:query_time, query_time)
+        |> Map.put(:queue_time, queue_time)
+        |> Map.put(:decode_time, decode_time)
+        |> log()
+      end
+
       def handle_event(_event, _latency, metadata, _config) do
         log(metadata)
       end
