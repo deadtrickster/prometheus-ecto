@@ -3,16 +3,16 @@ defmodule PrometheusEctoTest do
 
   require Prometheus.Registry
 
+  alias Prometheus.EctoInstrumenter.TestRepo
+  alias Prometheus.EctoInstrumenter.TestSchema
+
   setup do
     Prometheus.Registry.clear(:default)
     Prometheus.Registry.clear(:qwe)
     TestEctoInstrumenter.setup()
     TestEctoInstrumenterWithConfig.setup()
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Prometheus.EctoInstrumenter.TestRepo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(TestRepo)
   end
-
-  alias Prometheus.EctoInstrumenter.TestSchema
-  alias Prometheus.EctoInstrumenter.TestRepo
   use Prometheus.Metric
 
   test "the truth" do

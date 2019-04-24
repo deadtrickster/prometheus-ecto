@@ -52,7 +52,8 @@ defmodule PrometheusEcto.Mixfile do
       {:ecto, "~> 2.0 or ~> 3.0"},
       {:mariaex, ">= 0.0.0", only: :test},
       {:ex_doc, "~> 0.11", only: :dev},
-      {:earmark, ">= 0.0.0", only: :dev}
+      {:earmark, ">= 0.0.0", only: :dev},
+      {:credo, github: "rrrene/credo", only: [:dev, :test], runtime: false, app: false}
     ]
   end
 end
