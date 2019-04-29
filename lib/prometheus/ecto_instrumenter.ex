@@ -178,13 +178,30 @@ defmodule Prometheus.EctoInstrumenter do
         end
       end
 
-      def handle_event(_event, latency, metadata, _config) when is_map(latency) do
+      def handle_event(event, latency, metadata, _config) when is_map(latency) do
         latency
-        |> Map.put(:decode_time, Map.get(latency, :decode_time, 0))
+        |> append_latency_to_metadata(metadata)
+        |> log()
+      end
+
+      def append_latency_to_metadata(latency, metadata) do
+        latency
+        |> put_default(:decode_time, 0)
+        |> put_default(:queue_time, 0)
+        |> put_default(:query_time, 0)
         |> Enum.reduce(metadata, fn {key, value}, metadata ->
           Map.put(metadata, key, value)
         end)
-        |> log()
+      end
+
+      def put_default(map, key, default_value) do
+        case Map.get(map, key) do
+          nil ->
+            Map.put(map, key, default_value)
+
+          _ ->
+            Map.put_new(map, key, default_value)
+        end
       end
 
       def handle_event(_event, _latency, metadata, _config) do
