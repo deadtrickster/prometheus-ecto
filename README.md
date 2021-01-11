@@ -1,8 +1,11 @@
 # Prometheus.io Ecto Instrumenter
-[![Hex.pm](https://img.shields.io/hexpm/v/prometheus_ecto.svg?maxAge=2592000)](https://hex.pm/packages/prometheus_ecto)
-[![Hex.pm](https://img.shields.io/hexpm/dt/prometheus_ecto.svg?maxAge=2592000)](https://hex.pm/packages/prometheus_ecto)
+
 [![Build Status](https://travis-ci.org/deadtrickster/prometheus-ecto.svg?branch=master)](https://travis-ci.org/deadtrickster/prometheus-ecto)
-[![Documentation](https://img.shields.io/badge/documentation-on%20hexdocs-green.svg)](https://hexdocs.pm/prometheus_ecto/)
+[![Module version](https://img.shields.io/hexpm/v/prometheus_ecto.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_ecto)
+[![Documentation](https://img.shields.io/badge/hex-docs-green.svg)](https://hexdocs.pm/prometheus_ecto/)
+[![Total Download](https://img.shields.io/hexpm/dt/prometheus_ecto.svg?maxAge=2592000)](https://hex.pm/packages/prometheus_ecto)
+[![License](https://img.shields.io/hexpm/l/prometheus_ecto.svg?maxAge=259200)](https://github.com/deadtrickster/prometheus-ecto/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/deadtrickster/prometheus-ecto.svg)](https://github.com/deadtrickster/prometheus-ecto/commits/master)
 
 Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus.ex)
 
@@ -26,11 +29,13 @@ Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus
     ```
 
 3. If using Ecto 2, add `MyApp.Repo.Instrumenter` to Repo loggers list:
+
     ```elixir
     config :myapp, MyApp.Repo,
       loggers: [MyApp.Repo.Instrumenter, Ecto.LogEntry]
       # ...
     ```
+
     If using Ecto 3, attach to telemetry in your application start function:
 
     ```elixir
@@ -43,6 +48,7 @@ Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus
         %{}
       )
     ```
+
     If using Ecto 3.1 with telemetry 0.4+:
 
     ```elixir
@@ -50,7 +56,7 @@ Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus
       :telemetry.attach(
         "prometheus-ecto",
         [:my_app, :repo, :query],
-        &MyApp.Repo.Instrumenter.handle_event/4,        
+        &MyApp.Repo.Instrumenter.handle_event/4,
         %{}
       )
     ```
@@ -68,15 +74,15 @@ Ecto integration for [Prometheus.ex](https://github.com/deadtrickster/prometheus
 
 [Available in Hex](https://hex.pm/docs/publish), the package can be installed as:
 
-  1. Add `prometheus_ecto` to your list of dependencies in `mix.exs`:
+  1. Add `:prometheus_ecto` to your list of dependencies in `mix.exs`:
 
       ```elixir
       def deps do
-        [{:prometheus_ecto, "~> 1.4.1"}]
+        [{:prometheus_ecto, "~> 1.4.3"}]
       end
       ```
 
-  2. Ensure `prometheus_ecto` is started before your application:
+  2. Ensure `:prometheus_ecto` is started before your application:
 
       ```elixir
       def application do

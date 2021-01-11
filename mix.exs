@@ -1,6 +1,7 @@
 defmodule PrometheusEcto.Mixfile do
   use Mix.Project
 
+  @source_url "https://github.com/deadtrickster/prometheus-ecto"
   @version "1.4.3"
 
   def project do
@@ -14,9 +15,10 @@ defmodule PrometheusEcto.Mixfile do
       package: package(),
       deps: deps(),
       docs: [
-        main: Prometheus.EctoInstrumenter,
+        main: "readme",
         source_ref: "v#{@version}",
-        source_url: "https://github.com/deadtrickster/prometheus-ecto"
+        source_url: @source_url,
+        extras: ["README.md"]
       ]
     ]
   end
@@ -36,7 +38,7 @@ defmodule PrometheusEcto.Mixfile do
       maintainers: ["Ilya Khaprov"],
       licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/deadtrickster/prometheus-ecto",
+        "GitHub" => @source_url,
         "Prometheus.erl" => "https://hex.pm/packages/prometheus",
         "Prometheus.ex" => "https://hex.pm/packages/prometheus_ex",
         "Plugs Instrumenter/Exporter" => "https://hex.pm/packages/prometheus_plugs",
@@ -51,7 +53,7 @@ defmodule PrometheusEcto.Mixfile do
       {:prometheus_ex, "~> 1.1 or ~> 2.0 or ~> 3.0"},
       {:ecto, "~> 2.0 or ~> 3.0"},
       {:mariaex, ">= 0.0.0", only: :test},
-      {:ex_doc, "~> 0.11", only: :dev},
+      {:ex_doc, ">= 0.0.0", only: :dev},
       {:earmark, ">= 0.0.0", only: :dev},
       {:credo, github: "rrrene/credo", only: [:dev, :test], runtime: false, app: false}
     ]

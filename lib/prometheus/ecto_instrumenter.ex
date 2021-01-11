@@ -6,26 +6,26 @@ defmodule Prometheus.EctoInstrumenter do
 
   1. Define your instrumenter:
 
-  ```elixir
-  defmodule MyApp.Repo.Instrumenter do
-    use Prometheus.EctoInstrumenter
-  end
-  ```
+    ```elixir
+    defmodule MyApp.Repo.Instrumenter do
+      use Prometheus.EctoInstrumenter
+    end
+    ```
 
   2. Call `MyApp.Repo.Instrumenter.setup/0` when application starts (e.g. supervisor setup):
 
-  ```elixir
-  MyApp.Repo.Instrumenter.setup()
-  ```
+    ```elixir
+    MyApp.Repo.Instrumenter.setup()
+    ```
 
   3. Add `MyApp.Repo.Instrumenter` to Repo loggers list:
 
-  ```elixir
-  config :myapp, MyApp.Repo,
-    ...
-    loggers: [MyApp.Repo.Instrumenter, Ecto.LogEntry]
-    ...
-  ```
+    ```elixir
+    config :myapp, MyApp.Repo,
+      ...
+      loggers: [MyApp.Repo.Instrumenter, Ecto.LogEntry]
+      ...
+    ```
 
   ### Metrics
 
@@ -39,9 +39,10 @@ defmodule Prometheus.EctoInstrumenter do
   stage or query can be cashed, etc.
 
   You can instrument these stages separately
-   - queue - `ecto_queue_duration_<duration_unit>`
-   - query - `ecto_db_query_duration_<duration_unit>`
-   - decode - `ecto_decode_duration_<duration_unit>`.
+
+   - `:queue` - `ecto_queue_duration_<duration_unit>`
+   - `:query` - `ecto_db_query_duration_<duration_unit>`
+   - `:decode` - `ecto_decode_duration_<duration_unit>`.
 
   Stages can be disabled/enabled via configuration. By default all stages are enabled.
 
@@ -49,9 +50,11 @@ defmodule Prometheus.EctoInstrumenter do
   Basically it sums non-nil stages.
 
   There's an ability to count total amount of Ecto queries. It is disabled by default, to enable set
-  `counter: true` in configuration for your instrumenter module then you can instrument it via `ecto_queries_total`.
+  `counter: true` in configuration for your instrumenter module then you can instrument it via
+  `:ecto_queries_total`.
 
   Default labels:
+
    - `:result`
 
   ### Configuration
@@ -75,6 +78,7 @@ defmodule Prometheus.EctoInstrumenter do
   ```
 
   Available duration units:
+
    - microseconds;
    - milliseconds;
    - seconds;
