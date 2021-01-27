@@ -104,7 +104,7 @@ defmodule Prometheus.EctoInstrumenter do
   defmodule MyApp.Repo.Instrumenter do
     use Prometheus.EctoInstrumenter
 
-    label_value(:my_private_label, log_entry) do
+    def label_value(:my_private_label, log_entry) do
       ...
     end
   end
