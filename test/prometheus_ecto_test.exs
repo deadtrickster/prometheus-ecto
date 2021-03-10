@@ -9,6 +9,7 @@ defmodule PrometheusEctoTest do
   setup do
     Prometheus.Registry.clear(:default)
     Prometheus.Registry.clear(:qwe)
+
     TestEctoInstrumenter.setup()
     TestEctoInstrumenterWithConfig.setup()
 
@@ -32,7 +33,7 @@ defmodule PrometheusEctoTest do
   use Prometheus.Metric
 
   describe "handle_event/4" do
-    test "Defaults decode_time, query_time, queue_time to 0 when not present" do
+    test "Defaults decode_time, query_time, queue_time, and idle_time to 0 when not present" do
       metadata =
         TestEctoInstrumenter.append_latency_to_metadata(
           %{total_time: 2_443_000},
@@ -49,13 +50,14 @@ defmodule PrometheusEctoTest do
       assert metadata.decode_time == 0
       assert metadata.query_time == 0
       assert metadata.queue_time == 0
+      assert metadata.idle_time == 0
       assert metadata.total_time == 2_443_000
     end
 
-    test "Defaults decode_time, query_time and queue_time to 0 when they are nil" do
+    test "Defaults decode_time, query_time, queue_time, and idle_time to 0 when they are nil" do
       metadata =
         TestEctoInstrumenter.append_latency_to_metadata(
-          %{queue_time: nil, query_time: nil, decode_time: nil, total_time: 0},
+          %{idle_time: nil, queue_time: nil, query_time: nil, decode_time: nil, total_time: 0},
           %{
             params: [],
             query: "",
@@ -69,6 +71,7 @@ defmodule PrometheusEctoTest do
       assert metadata.decode_time == 0
       assert metadata.query_time == 0
       assert metadata.queue_time == 0
+      assert metadata.idle_time == 0
       assert metadata.total_time == 0
     end
   end
@@ -80,6 +83,15 @@ defmodule PrometheusEctoTest do
     assert_raise Prometheus.UnknownMetricError, fn ->
       Counter.value(name: :ecto_queries_total)
     end
+
+    assert {buckets, sum} =
+             Histogram.value(
+               name: :ecto_idle_duration_microseconds,
+               labels: [:ok]
+             )
+
+    assert sum = 0
+    assert 1 = Enum.reduce(buckets, fn x, acc -> x + acc end)
 
     assert {buckets, sum} =
              Histogram.value(
@@ -119,8 +131,17 @@ defmodule PrometheusEctoTest do
 
     changeset = TestSchema.changeset(%TestSchema{}, %{test_field: "qwe"})
 
-    ## transactioned insertion - there should be queries with queue/decode_time=nil
+    ## transactioned insertion - there should be queries with idle/queue/decode_time=nil
     {:ok, _} = TestRepo.transaction(fn -> TestRepo.insert(changeset) end)
+
+    assert {buckets, sum} =
+             Histogram.value(
+               name: :ecto_idle_duration_microseconds,
+               labels: [:ok]
+             )
+
+    assert sum = 0
+    assert 4 = Enum.reduce(buckets, fn x, acc -> x + acc end)
 
     assert {buckets, sum} =
              Histogram.value(
@@ -162,6 +183,17 @@ defmodule PrometheusEctoTest do
   test "Custom config test" do
     result = TestRepo.query!("SELECT 1")
     assert result.rows == [[1]]
+
+    assert {buckets, sum} =
+             Histogram.value(
+               name: :ecto_idle_duration_seconds,
+               registry: :qwe,
+               labels: ["custom_label"]
+             )
+
+    assert 3 = length(buckets)
+    assert sum = 0
+    assert 1 = Enum.reduce(buckets, fn x, acc -> x + acc end)
 
     assert {buckets, sum} =
              Histogram.value(
@@ -213,7 +245,7 @@ defmodule PrometheusEctoTest do
 
     changeset = TestSchema.changeset(%TestSchema{}, %{test_field: "qwe"})
 
-    ## transactioned insertion - there should be queries with queue/decode_time=nil
+    ## transactioned insertion - there should be queries with idle/queue/decode_time=nil
     {:ok, _} = TestRepo.transaction(fn -> TestRepo.insert(changeset) end)
 
     assert {buckets, sum} =

@@ -13,7 +13,7 @@ Application.put_env(
   TestEctoInstrumenterWithConfig,
   labels: [:custom_label],
   registry: :qwe,
-  stages: [:queue, :query],
+  stages: [:idle, :queue, :query],
   counter: true,
   query_duration_buckets: [100, 200],
   duration_unit: :seconds

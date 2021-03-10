@@ -29,17 +29,19 @@ defmodule Prometheus.EctoInstrumenter do
 
   ### Metrics
 
-  Each Ecto query has different stages. Currently there are three of them:
+  Each Ecto query has different stages. Currently there are four of them:
 
+   - idle - when socket is waiting for a request in the pool;
    - queue - when socket checked out from the pool;
    - query (this instrumenter uses db_query name) - when actual database query performed;
    - decode - when query result decoded.
 
   Any of these stages can be nil (i.e. not performed). For example queries inside transaction won't have queue
-  stage or query can be cashed, etc.
+  stage or query can be cached, etc.
 
   You can instrument these stages separately
 
+   - `:idle` - `ecto_idle_duration_<duration_unit>`
    - `:queue` - `ecto_queue_duration_<duration_unit>`
    - `:query` - `ecto_db_query_duration_<duration_unit>`
    - `:decode` - `ecto_decode_duration_<duration_unit>`.
@@ -66,7 +68,7 @@ defmodule Prometheus.EctoInstrumenter do
 
   ```elixir
   config :prometheus, MyApp.Repo.Instrumenter,
-    stages: [:queue, :query, :decode],
+    stages: [:idle, :queue, :query, :decode],
     counter: false,
     labels: [:result],
     query_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000,
@@ -112,7 +114,7 @@ defmodule Prometheus.EctoInstrumenter do
   """
 
   use Prometheus.Config,
-    stages: [:queue, :query, :decode],
+    stages: [:idle, :queue, :query, :decode],
     counter: false,
     labels: [:result],
     query_duration_buckets: [
@@ -188,8 +190,13 @@ defmodule Prometheus.EctoInstrumenter do
         |> log()
       end
 
+      def handle_event(_event, _latency, metadata, _config) do
+        log(metadata)
+      end
+
       def append_latency_to_metadata(latency, metadata) do
         latency
+        |> put_default(:idle_time, 0)
         |> put_default(:decode_time, 0)
         |> put_default(:queue_time, 0)
         |> put_default(:query_time, 0)
@@ -206,10 +213,6 @@ defmodule Prometheus.EctoInstrumenter do
           _ ->
             Map.put_new(map, key, default_value)
         end
-      end
-
-      def handle_event(_event, _latency, metadata, _config) do
-        log(metadata)
       end
 
       def log(entry) do
@@ -284,9 +287,13 @@ defmodule Prometheus.EctoInstrumenter do
     end
   end
 
+  defp stage_metric_name(:idle, duration_unit), do: :"ecto_idle_duration_#{duration_unit}"
   defp stage_metric_name(:queue, duration_unit), do: :"ecto_queue_duration_#{duration_unit}"
   defp stage_metric_name(:query, duration_unit), do: :"ecto_db_query_duration_#{duration_unit}"
   defp stage_metric_name(:decode, duration_unit), do: :"ecto_decode_duration_#{duration_unit}"
+
+  defp stage_metric_help(:idle, duration_unit),
+    do: "The time spent waiting before being checked out in #{duration_unit}."
 
   defp stage_metric_help(:queue, duration_unit),
     do: "The time spent to check the connection out in #{duration_unit}."
@@ -323,6 +330,12 @@ defmodule Prometheus.EctoInstrumenter do
   defp label_value(label) do
     quote do
       label_value(unquote(label), entry)
+    end
+  end
+
+  defp stage_value(:idle) do
+    quote do
+      entry.idle_time
     end
   end
 
