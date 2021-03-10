@@ -11,6 +11,21 @@ defmodule PrometheusEctoTest do
     Prometheus.Registry.clear(:qwe)
     TestEctoInstrumenter.setup()
     TestEctoInstrumenterWithConfig.setup()
+
+    :telemetry.attach(
+      "prometheus-ecto-instrumentor-test",
+      [:prometheus, :ecto_instrumenter, :test_repo, :query],
+      &TestEctoInstrumenter.handle_event/4,
+      %{}
+    )
+
+    :telemetry.attach(
+      "prometheus-ecto-instrumentor-with-config-test",
+      [:prometheus, :ecto_instrumenter, :test_repo, :query],
+      &TestEctoInstrumenterWithConfig.handle_event/4,
+      %{}
+    )
+
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(TestRepo)
   end
 
@@ -56,10 +71,6 @@ defmodule PrometheusEctoTest do
       assert metadata.queue_time == 0
       assert metadata.total_time == 0
     end
-  end
-
-  test "the truth" do
-    assert 1 + 1 == 2
   end
 
   test "Default test" do
@@ -127,7 +138,7 @@ defmodule PrometheusEctoTest do
              )
 
     assert sum > 0
-    assert 2 = Enum.reduce(buckets, fn x, acc -> x + acc end)
+    assert 4 = Enum.reduce(buckets, fn x, acc -> x + acc end)
 
     assert {buckets, sum} =
              Histogram.value(
@@ -145,7 +156,7 @@ defmodule PrometheusEctoTest do
              )
 
     assert sum > 0
-    assert 2 = Enum.reduce(buckets, fn x, acc -> x + acc end)
+    assert 4 = Enum.reduce(buckets, fn x, acc -> x + acc end)
   end
 
   test "Custom config test" do
@@ -225,7 +236,7 @@ defmodule PrometheusEctoTest do
 
     assert 3 = length(buckets)
     assert sum < 1
-    assert 2 = Enum.reduce(buckets, fn x, acc -> x + acc end)
+    assert 4 = Enum.reduce(buckets, fn x, acc -> x + acc end)
 
     assert {buckets, sum} =
              Histogram.value(
