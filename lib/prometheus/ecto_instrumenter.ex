@@ -116,7 +116,7 @@ defmodule Prometheus.EctoInstrumenter do
   use Prometheus.Config,
     stages: [:idle, :queue, :query, :decode],
     counter: false,
-    labels: [:result],
+    labels: [:result, :repo],
     query_duration_buckets: [
       10,
       100,
@@ -136,7 +136,6 @@ defmodule Prometheus.EctoInstrumenter do
 
   use Prometheus.Metric
 
-  ## TODO: support different repos via repo label
   defmacro __using__(_opts) do
     module_name = __CALLER__.module
 
@@ -312,6 +311,14 @@ defmodule Prometheus.EctoInstrumenter do
     quote do
       {result, _} = entry.result
       result
+    end
+  end
+
+  defp label_value(:repo) do
+    quote do
+      entry.repo
+      |> Module.split()
+      |> Enum.join(".")
     end
   end
 

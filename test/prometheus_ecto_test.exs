@@ -87,7 +87,7 @@ defmodule PrometheusEctoTest do
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_idle_duration_microseconds,
-               labels: [:ok]
+               labels: [:ok, "Prometheus.EctoInstrumenter.TestRepo"]
              )
 
     assert sum = 0
@@ -96,7 +96,7 @@ defmodule PrometheusEctoTest do
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_query_duration_microseconds,
-               labels: [:ok]
+               labels: [:ok, "Prometheus.EctoInstrumenter.TestRepo"]
              )
 
     assert sum > 0.1
@@ -105,7 +105,7 @@ defmodule PrometheusEctoTest do
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_queue_duration_microseconds,
-               labels: [:ok]
+               labels: [:ok, "Prometheus.EctoInstrumenter.TestRepo"]
              )
 
     assert sum > 0
@@ -114,7 +114,7 @@ defmodule PrometheusEctoTest do
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_db_query_duration_microseconds,
-               labels: [:ok]
+               labels: [:ok, "Prometheus.EctoInstrumenter.TestRepo"]
              )
 
     assert sum > 0.1
@@ -123,7 +123,7 @@ defmodule PrometheusEctoTest do
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_decode_duration_microseconds,
-               labels: [:ok]
+               labels: [:ok, "Prometheus.EctoInstrumenter.TestRepo"]
              )
 
     assert sum > 0
@@ -137,7 +137,7 @@ defmodule PrometheusEctoTest do
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_idle_duration_microseconds,
-               labels: [:ok]
+               labels: [:ok, "Prometheus.EctoInstrumenter.TestRepo"]
              )
 
     assert sum = 0
@@ -146,7 +146,7 @@ defmodule PrometheusEctoTest do
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_query_duration_microseconds,
-               labels: [:ok]
+               labels: [:ok, "Prometheus.EctoInstrumenter.TestRepo"]
              )
 
     assert sum > 0.1
@@ -155,7 +155,7 @@ defmodule PrometheusEctoTest do
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_queue_duration_microseconds,
-               labels: [:ok]
+               labels: [:ok, "Prometheus.EctoInstrumenter.TestRepo"]
              )
 
     assert sum > 0
@@ -164,7 +164,7 @@ defmodule PrometheusEctoTest do
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_db_query_duration_microseconds,
-               labels: [:ok]
+               labels: [:ok, "Prometheus.EctoInstrumenter.TestRepo"]
              )
 
     assert sum > 0.1
@@ -173,7 +173,7 @@ defmodule PrometheusEctoTest do
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_decode_duration_microseconds,
-               labels: [:ok]
+               labels: [:ok, "Prometheus.EctoInstrumenter.TestRepo"]
              )
 
     assert sum > 0
