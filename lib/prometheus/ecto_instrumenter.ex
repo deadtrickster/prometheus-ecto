@@ -12,11 +12,43 @@ defmodule Prometheus.EctoInstrumenter do
     end
     ```
 
-  2. Setup the instrumenter and attach telemetry handler when application starts (e.g. supervisor setup):
+  2. Call `MyApp.Repo.Instrumenter.setup/0` when application starts (e.g. supervisor setup):
 
     ```elixir
     MyApp.Repo.Instrumenter.setup()
-    :ok = :telemetry.attach("prometheus-ecto", [:my_app, :repo, :query], &MyApp.Repo.Instrumenter.handle_event/4, %{})
+    ```
+
+  3. If using Ecto 2, add `MyApp.Repo.Instrumenter` to Repo loggers list:
+
+    ```elixir
+    config :myapp, MyApp.Repo,
+      loggers: [MyApp.Repo.Instrumenter, Ecto.LogEntry]
+      # ...
+    ```
+
+    If using Ecto 3, attach to telemetry in your application start function:
+
+    ```elixir
+    :ok =
+      Telemetry.attach(
+        "prometheus-ecto",
+        [:my_app, :repo, :query],
+        MyApp.Repo.Instrumenter,
+        :handle_event,
+        %{}
+      )
+    ```
+
+    If using Ecto 3.1 with telemetry 0.4+:
+
+    ```elixir
+    :ok =
+      :telemetry.attach(
+        "prometheus-ecto",
+        [:my_app, :repo, :query],
+        &MyApp.Repo.Instrumenter.handle_event/4,
+        %{}
+      )
     ```
 
   ### Metrics
@@ -50,6 +82,7 @@ defmodule Prometheus.EctoInstrumenter do
   Default labels:
 
    - `:result`
+   - `:repo`
 
   ### Configuration
 
@@ -62,7 +95,7 @@ defmodule Prometheus.EctoInstrumenter do
   config :prometheus, MyApp.Repo.Instrumenter,
     stages: [:idle, :queue, :query, :decode],
     counter: false,
-    labels: [:result],
+    labels: [:result, :repo],
     query_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000,
                              500_000, 750_000, 1_000_000, 1_500_000,
                              2_000_000, 3_000_000],
@@ -85,11 +118,11 @@ defmodule Prometheus.EctoInstrumenter do
 
   ### Custom Labels
 
-  Custom labels can be defined by implementing label_value/2 function in instrumenter directly or
+  Custom labels can be defined by implementing label_value/3 function in instrumenter directly or
   by calling exported function from other module.
 
   ```elixir
-    labels: [:result,
+    labels: [:result, :repo,
              :my_private_label,
              {:label_from_other_module, Module}, # eqv to {Module, label_value}
              {:non_default_label_value, {Module, custom_fun}}]
@@ -98,7 +131,7 @@ defmodule Prometheus.EctoInstrumenter do
   defmodule MyApp.Repo.Instrumenter do
     use Prometheus.EctoInstrumenter
 
-    label_value(:my_private_label, log_entry) do
+    def label_value(:my_private_label, log_entry, config) do
       ...
     end
   end
