@@ -2,7 +2,7 @@ defmodule PrometheusEcto.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/deadtrickster/prometheus-ecto"
-  @version "1.4.3"
+  @version "2.4.3"
 
   def project do
     [
