@@ -24,7 +24,7 @@ defmodule PrometheusEctoTest do
       "prometheus-ecto-instrumentor-with-config-test",
       [:prometheus, :ecto_instrumenter, :test_repo, :query],
       &TestEctoInstrumenterWithConfig.handle_event/4,
-      %{}
+      %{custom_label: "dynamic_config_label"}
     )
 
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(TestRepo)
@@ -188,7 +188,7 @@ defmodule PrometheusEctoTest do
              Histogram.value(
                name: :ecto_idle_duration_seconds,
                registry: :qwe,
-               labels: ["custom_label"]
+               labels: ["custom_label", "dynamic_config_label"]
              )
 
     assert 3 = length(buckets)
@@ -199,7 +199,7 @@ defmodule PrometheusEctoTest do
              Histogram.value(
                name: :ecto_query_duration_seconds,
                registry: :qwe,
-               labels: ["custom_label"]
+               labels: ["custom_label", "dynamic_config_label"]
              )
 
     assert 3 = length(buckets)
@@ -210,14 +210,14 @@ defmodule PrometheusEctoTest do
              Counter.value(
                name: :ecto_queries_total,
                registry: :qwe,
-               labels: ["custom_label"]
+               labels: ["custom_label", "dynamic_config_label"]
              )
 
     assert {buckets, sum} =
              Histogram.value(
                name: :ecto_queue_duration_seconds,
                registry: :qwe,
-               labels: ["custom_label"]
+               labels: ["custom_label", "dynamic_config_label"]
              )
 
     assert 3 = length(buckets)
@@ -228,7 +228,7 @@ defmodule PrometheusEctoTest do
              Histogram.value(
                name: :ecto_db_query_duration_seconds,
                registry: :qwe,
-               labels: ["custom_label"]
+               labels: ["custom_label", "dynamic_config_label"]
              )
 
     assert 3 = length(buckets)
@@ -239,7 +239,7 @@ defmodule PrometheusEctoTest do
       Histogram.value(
         name: :ecto_decode_duration_seconds,
         registry: :qwe,
-        labels: ["custom_label"]
+        labels: ["custom_label", "dynamic_config_label"]
       )
     end
 
@@ -252,7 +252,7 @@ defmodule PrometheusEctoTest do
              Histogram.value(
                name: :ecto_query_duration_seconds,
                registry: :qwe,
-               labels: ["custom_label"]
+               labels: ["custom_label", "dynamic_config_label"]
              )
 
     assert 3 = length(buckets)
@@ -263,7 +263,7 @@ defmodule PrometheusEctoTest do
              Histogram.value(
                name: :ecto_queue_duration_seconds,
                registry: :qwe,
-               labels: ["custom_label"]
+               labels: ["custom_label", "dynamic_config_label"]
              )
 
     assert 3 = length(buckets)
@@ -274,7 +274,7 @@ defmodule PrometheusEctoTest do
              Histogram.value(
                name: :ecto_db_query_duration_seconds,
                registry: :qwe,
-               labels: ["custom_label"]
+               labels: ["custom_label", "dynamic_config_label"]
              )
 
     assert 3 = length(buckets)
@@ -285,7 +285,7 @@ defmodule PrometheusEctoTest do
       Histogram.value(
         name: :ecto_decode_duration_seconds,
         registry: :qwe,
-        labels: ["custom_label"]
+        labels: ["custom_label", "dynamic_config_label"]
       )
     end
   end

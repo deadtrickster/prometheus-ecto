@@ -11,7 +11,7 @@ Application.put_env(
 Application.put_env(
   :prometheus,
   TestEctoInstrumenterWithConfig,
-  labels: [:custom_label],
+  labels: [:custom_label, :dynamic_config_label],
   registry: :qwe,
   stages: [:idle, :queue, :query],
   counter: true,
@@ -26,8 +26,12 @@ end
 defmodule TestEctoInstrumenterWithConfig do
   use Prometheus.EctoInstrumenter
 
-  def label_value(:custom_label, _) do
+  def label_value(:custom_label, _entry, _config) do
     "custom_label"
+  end
+
+  def label_value(:dynamic_config_label, _entry, config) do
+    config.custom_label
   end
 end
 

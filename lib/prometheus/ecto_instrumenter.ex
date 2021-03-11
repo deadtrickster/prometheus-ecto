@@ -12,19 +12,11 @@ defmodule Prometheus.EctoInstrumenter do
     end
     ```
 
-  2. Call `MyApp.Repo.Instrumenter.setup/0` when application starts (e.g. supervisor setup):
+  2. Setup the instrumenter and attach telemetry handler when application starts (e.g. supervisor setup):
 
     ```elixir
     MyApp.Repo.Instrumenter.setup()
-    ```
-
-  3. Add `MyApp.Repo.Instrumenter` to Repo loggers list:
-
-    ```elixir
-    config :myapp, MyApp.Repo,
-      ...
-      loggers: [MyApp.Repo.Instrumenter, Ecto.LogEntry]
-      ...
+    :ok = :telemetry.attach("prometheus-ecto", [:my_app, :repo, :query], &MyApp.Repo.Instrumenter.handle_event/4, %{})
     ```
 
   ### Metrics
@@ -183,14 +175,14 @@ defmodule Prometheus.EctoInstrumenter do
         end
       end
 
-      def handle_event(event, latency, metadata, _config) when is_map(latency) do
+      def handle_event(event, latency, metadata, config) when is_map(latency) do
         latency
         |> append_latency_to_metadata(metadata)
-        |> log()
+        |> log(config)
       end
 
-      def handle_event(_event, _latency, metadata, _config) do
-        log(metadata)
+      def handle_event(_event, _latency, metadata, config) do
+        log(metadata, config)
       end
 
       def append_latency_to_metadata(latency, metadata) do
@@ -214,7 +206,7 @@ defmodule Prometheus.EctoInstrumenter do
         end
       end
 
-      def log(entry) do
+      def log(entry, config) do
         labels = unquote(construct_labels(labels))
 
         unquote_splicing do
@@ -324,19 +316,19 @@ defmodule Prometheus.EctoInstrumenter do
 
   defp label_value({label, {module, fun}}) do
     quote do
-      unquote(module).unquote(fun)(unquote(label), entry)
+      unquote(module).unquote(fun)(unquote(label), entry, config)
     end
   end
 
   defp label_value({label, module}) do
     quote do
-      unquote(module).label_value(unquote(label), entry)
+      unquote(module).label_value(unquote(label), entry, config)
     end
   end
 
   defp label_value(label) do
     quote do
-      label_value(unquote(label), entry)
+      label_value(unquote(label), entry, config)
     end
   end
 
