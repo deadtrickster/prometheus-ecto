@@ -18,28 +18,54 @@ defmodule Prometheus.EctoInstrumenter do
     MyApp.Repo.Instrumenter.setup()
     ```
 
-  3. Add `MyApp.Repo.Instrumenter` to Repo loggers list:
+  3. If using Ecto 2, add `MyApp.Repo.Instrumenter` to Repo loggers list:
 
     ```elixir
     config :myapp, MyApp.Repo,
-      ...
       loggers: [MyApp.Repo.Instrumenter, Ecto.LogEntry]
-      ...
+      # ...
+    ```
+
+    If using Ecto 3, attach to telemetry in your application start function:
+
+    ```elixir
+    :ok =
+      Telemetry.attach(
+        "prometheus-ecto",
+        [:my_app, :repo, :query],
+        MyApp.Repo.Instrumenter,
+        :handle_event,
+        %{}
+      )
+    ```
+
+    If using Ecto 3.1 with telemetry 0.4+:
+
+    ```elixir
+    :ok =
+      :telemetry.attach(
+        "prometheus-ecto",
+        [:my_app, :repo, :query],
+        &MyApp.Repo.Instrumenter.handle_event/4,
+        %{}
+      )
     ```
 
   ### Metrics
 
-  Each Ecto query has different stages. Currently there are three of them:
+  Each Ecto query has different stages. Currently there are four of them:
 
+   - idle - when socket is waiting for a request in the pool;
    - queue - when socket checked out from the pool;
    - query (this instrumenter uses db_query name) - when actual database query performed;
    - decode - when query result decoded.
 
   Any of these stages can be nil (i.e. not performed). For example queries inside transaction won't have queue
-  stage or query can be cashed, etc.
+  stage or query can be cached, etc.
 
   You can instrument these stages separately
 
+   - `:idle` - `ecto_idle_duration_<duration_unit>`
    - `:queue` - `ecto_queue_duration_<duration_unit>`
    - `:query` - `ecto_db_query_duration_<duration_unit>`
    - `:decode` - `ecto_decode_duration_<duration_unit>`.
@@ -56,6 +82,7 @@ defmodule Prometheus.EctoInstrumenter do
   Default labels:
 
    - `:result`
+   - `:repo`
 
   ### Configuration
 
@@ -66,9 +93,9 @@ defmodule Prometheus.EctoInstrumenter do
 
   ```elixir
   config :prometheus, MyApp.Repo.Instrumenter,
-    stages: [:queue, :query, :decode],
+    stages: [:idle, :queue, :query, :decode],
     counter: false,
-    labels: [:result],
+    labels: [:result, :repo],
     query_duration_buckets: [10, 100, 1_000, 10_000, 100_000, 300_000,
                              500_000, 750_000, 1_000_000, 1_500_000,
                              2_000_000, 3_000_000],
@@ -91,11 +118,11 @@ defmodule Prometheus.EctoInstrumenter do
 
   ### Custom Labels
 
-  Custom labels can be defined by implementing label_value/2 function in instrumenter directly or
+  Custom labels can be defined by implementing label_value/3 function in instrumenter directly or
   by calling exported function from other module.
 
   ```elixir
-    labels: [:result,
+    labels: [:result, :repo,
              :my_private_label,
              {:label_from_other_module, Module}, # eqv to {Module, label_value}
              {:non_default_label_value, {Module, custom_fun}}]
@@ -104,7 +131,7 @@ defmodule Prometheus.EctoInstrumenter do
   defmodule MyApp.Repo.Instrumenter do
     use Prometheus.EctoInstrumenter
 
-    label_value(:my_private_label, log_entry) do
+    def label_value(:my_private_label, log_entry, config) do
       ...
     end
   end
@@ -112,9 +139,9 @@ defmodule Prometheus.EctoInstrumenter do
   """
 
   use Prometheus.Config,
-    stages: [:queue, :query, :decode],
+    stages: [:idle, :queue, :query, :decode],
     counter: false,
-    labels: [:result],
+    labels: [:result, :repo],
     query_duration_buckets: [
       10,
       100,
@@ -134,7 +161,6 @@ defmodule Prometheus.EctoInstrumenter do
 
   use Prometheus.Metric
 
-  ## TODO: support different repos via repo label
   defmacro __using__(_opts) do
     module_name = __CALLER__.module
 
@@ -182,14 +208,19 @@ defmodule Prometheus.EctoInstrumenter do
         end
       end
 
-      def handle_event(event, latency, metadata, _config) when is_map(latency) do
+      def handle_event(event, latency, metadata, config) when is_map(latency) do
         latency
         |> append_latency_to_metadata(metadata)
-        |> log()
+        |> log(config)
+      end
+
+      def handle_event(_event, _latency, metadata, config) do
+        log(metadata, config)
       end
 
       def append_latency_to_metadata(latency, metadata) do
         latency
+        |> put_default(:idle_time, 0)
         |> put_default(:decode_time, 0)
         |> put_default(:queue_time, 0)
         |> put_default(:query_time, 0)
@@ -208,11 +239,7 @@ defmodule Prometheus.EctoInstrumenter do
         end
       end
 
-      def handle_event(_event, _latency, metadata, _config) do
-        log(metadata)
-      end
-
-      def log(entry) do
+      def log(entry, config) do
         labels = unquote(construct_labels(labels))
 
         unquote_splicing do
@@ -284,9 +311,13 @@ defmodule Prometheus.EctoInstrumenter do
     end
   end
 
+  defp stage_metric_name(:idle, duration_unit), do: :"ecto_idle_duration_#{duration_unit}"
   defp stage_metric_name(:queue, duration_unit), do: :"ecto_queue_duration_#{duration_unit}"
   defp stage_metric_name(:query, duration_unit), do: :"ecto_db_query_duration_#{duration_unit}"
   defp stage_metric_name(:decode, duration_unit), do: :"ecto_decode_duration_#{duration_unit}"
+
+  defp stage_metric_help(:idle, duration_unit),
+    do: "The time spent waiting before being checked out in #{duration_unit}."
 
   defp stage_metric_help(:queue, duration_unit),
     do: "The time spent to check the connection out in #{duration_unit}."
@@ -308,21 +339,35 @@ defmodule Prometheus.EctoInstrumenter do
     end
   end
 
+  defp label_value(:repo) do
+    quote do
+      entry.repo
+      |> Module.split()
+      |> Enum.join(".")
+    end
+  end
+
   defp label_value({label, {module, fun}}) do
     quote do
-      unquote(module).unquote(fun)(unquote(label), entry)
+      unquote(module).unquote(fun)(unquote(label), entry, config)
     end
   end
 
   defp label_value({label, module}) do
     quote do
-      unquote(module).label_value(unquote(label), entry)
+      unquote(module).label_value(unquote(label), entry, config)
     end
   end
 
   defp label_value(label) do
     quote do
-      label_value(unquote(label), entry)
+      label_value(unquote(label), entry, config)
+    end
+  end
+
+  defp stage_value(:idle) do
+    quote do
+      entry.idle_time
     end
   end
 

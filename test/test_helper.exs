@@ -4,8 +4,6 @@ Application.put_env(
   Prometheus.EctoInstrumenter,
   Prometheus.EctoInstrumenter.TestRepo,
   otp_app: Prometheus.EctoInstrumenter,
-  loggers: [Ecto.LogEntry, TestEctoInstrumenter, TestEctoInstrumenterWithConfig],
-  adapter: Ecto.Adapters.MySQL,
   pool: Ecto.Adapters.SQL.Sandbox,
   url: "ecto://" <> (System.get_env("MYSQL_URL") || "root@localhost") <> "/ecto_instrumenter_test"
 )
@@ -13,9 +11,9 @@ Application.put_env(
 Application.put_env(
   :prometheus,
   TestEctoInstrumenterWithConfig,
-  labels: [:custom_label],
+  labels: [:custom_label, :dynamic_config_label],
   registry: :qwe,
-  stages: [:queue, :query],
+  stages: [:idle, :queue, :query],
   counter: true,
   query_duration_buckets: [100, 200],
   duration_unit: :seconds
@@ -28,13 +26,17 @@ end
 defmodule TestEctoInstrumenterWithConfig do
   use Prometheus.EctoInstrumenter
 
-  def label_value(:custom_label, _) do
+  def label_value(:custom_label, _entry, _config) do
     "custom_label"
+  end
+
+  def label_value(:dynamic_config_label, _entry, config) do
+    config.custom_label
   end
 end
 
 defmodule Prometheus.EctoInstrumenter.TestRepo do
-  use Ecto.Repo, otp_app: Prometheus.EctoInstrumenter
+  use Ecto.Repo, adapter: Ecto.Adapters.MyXQL, otp_app: Prometheus.EctoInstrumenter
 end
 
 defmodule Prometheus.EctoInstrumenter.TestSchema do
@@ -48,7 +50,7 @@ defmodule Prometheus.EctoInstrumenter.TestSchema do
 
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, ~w(test_field))
+    |> cast(params, ~w(test_field)a)
     |> validate_required([:test_field])
   end
 end
@@ -63,9 +65,7 @@ defmodule Prometheus.EctoInstrumenter.Migration do
   end
 end
 
-Application.ensure_all_started(:mariaex)
 Mix.Task.run("ecto.create", ~w(-r Prometheus.EctoInstrumenter.TestRepo))
-Application.ensure_all_started(:mariaex)
 Application.ensure_all_started(:ecto)
 {:ok, _pid} = Prometheus.EctoInstrumenter.TestRepo.start_link()
 
