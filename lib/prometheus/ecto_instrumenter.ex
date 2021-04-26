@@ -228,7 +228,7 @@ defmodule Prometheus.EctoInstrumenter do
                       name: unquote(stage_metric_name(stage, duration_unit)),
                       labels: labels
                     ],
-                    microseconds_time(value)
+                    value
                   )
                 end
               end
@@ -267,10 +267,6 @@ defmodule Prometheus.EctoInstrumenter do
         else
           value
         end
-      end
-
-      defp microseconds_time(time) do
-        System.convert_time_unit(time, :native, :microsecond)
       end
     end
   end
